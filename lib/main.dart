@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'features/feed/presentation/pages/feed_screen.dart';
+import 'features/feed/presentation/pages/main_wrapper.dart';
 
 void main() {
   runApp(const ProviderScope(child: VybeApp()));
@@ -20,7 +20,7 @@ class VybeApp extends StatelessWidget {
           primary: Colors.deepPurpleAccent,
         ),
       ),
-      home: const FeedScreen(),
+      home: const MainWrapper(),
     );
   }
 }
