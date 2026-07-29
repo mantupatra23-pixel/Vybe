@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 
 class UploadScreen extends StatefulWidget {
@@ -11,49 +13,98 @@ class UploadScreen extends StatefulWidget {
 class _UploadScreenState extends State<UploadScreen> {
   final _titleController = TextEditingController();
   final _tagsController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  
+  File? _selectedVideo;
   bool _isUploading = false;
-  String? _uploadStatus;
+  double _uploadProgress = 0.0;
+  String? _statusMessage;
 
-  // Live Render Backend API
   final String backendUrl = "https://vybe-backend-fbsi.onrender.com/api/v1/videos/generate-upload-url";
 
-  Future<void> _startUploadProcess() async {
-    if (_titleController.text.isEmpty) {
+  Future<void> _pickVideo() async {
+    final XFile? video = await _picker.pickVideo(source: ImageSource.gallery);
+    if (video != null) {
+      setState(() {
+        _selectedVideo = File(video.path);
+        _statusMessage = "Video selected! Ready to upload.";
+      });
+    }
+  }
+
+  Future<void> _uploadVideoToR2() async {
+    if (_selectedVideo == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a video title")),
+        const SnackBar(content: Text("Please select a video first!")),
+      );
+      return;
+    }
+
+    if (_titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a title for your video.")),
       );
       return;
     }
 
     setState(() {
       _isUploading = true;
-      _uploadStatus = "Requesting signed upload URL from Render Backend...";
+      _uploadProgress = 0.0;
+      _statusMessage = "Step 1/2: Fetching Cloudflare Signed URL from Render...";
     });
 
     try {
       final dio = Dio();
-      
-      // Step 1: Get Pre-Signed URL from FastAPI
-      final response = await dio.post(backendUrl, data: {
-        "file_name": "video_${DateTime.now().millisecondsSinceEpoch}.mp4",
+      String fileName = "video_${DateTime.now().millisecondsSinceEpoch}.mp4";
+
+      // 1. Fetch Presigned URL from FastAPI Render
+      final presignedResponse = await dio.post(backendUrl, data: {
+        "file_name": fileName,
         "content_type": "video/mp4"
       });
 
-      if (response.data["success"] == true) {
-        String uploadUrl = response.data["upload_url"];
-        String cdnUrl = response.data["cdn_url"];
+      if (presignedResponse.data["success"] == true) {
+        String uploadUrl = presignedResponse.data["upload_url"];
+        String cdnUrl = presignedResponse.data["cdn_url"];
 
         setState(() {
-          _uploadStatus = "Signed URL generated! Ready for Direct R2 Upload.\n\nCDN URL: $cdnUrl";
+          _statusMessage = "Step 2/2: Direct Uploading Video to Cloudflare R2...";
+        });
+
+        // 2. Direct Upload File to Cloudflare R2 bucket using HTTP PUT
+        int fileSize = await _selectedVideo!.length();
+        Stream<List<int>> fileStream = _selectedVideo!.openRead();
+
+        await dio.put(
+          uploadUrl,
+          data: fileStream,
+          options: Options(
+            headers: {
+              Headers.contentLengthHeader: fileSize,
+              "Content-Type": "video/mp4",
+            },
+          ),
+          onSendProgress: (sent, total) {
+            setState(() {
+              _uploadProgress = sent / total;
+            });
+          },
+        );
+
+        setState(() {
+          _statusMessage = "🎉 Success! Video uploaded to R2.\nCDN URL:\n$cdnUrl";
+          _selectedVideo = null;
+          _titleController.clear();
+          _tagsController.clear();
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Signed URL Generated Successfully! 🎉")),
+          const SnackBar(content: Text("Video Uploaded Successfully!")),
         );
       }
     } catch (e) {
       setState(() {
-        _uploadStatus = "Error connecting to Render API: $e";
+        _statusMessage = "Error during upload: $e";
       });
     } finally {
       setState(() {
@@ -67,7 +118,7 @@ class _UploadScreenState extends State<UploadScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF121218),
       appBar: AppBar(
-        title: const Text("Create Short Video", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text("Upload Micro-Lesson", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -77,21 +128,34 @@ class _UploadScreenState extends State<UploadScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                height: 180,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E2C),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.deepPurpleAccent.withOpacity(0.5), width: 1.5),
-                ),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.cloud_upload_outlined, size: 50, color: Colors.deepPurpleAccent),
-                    SizedBox(height: 10),
-                    Text("Select Video (Client Compressed - 720p)", style: TextStyle(color: Colors.white70)),
-                  ],
+              GestureDetector(
+                onTap: _isUploading ? null : _pickVideo,
+                child: Container(
+                  height: 180,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E1E2C),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: _selectedVideo != null ? Colors.greenAccent : Colors.deepPurpleAccent,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _selectedVideo != null ? Icons.check_circle_outline : Icons.cloud_upload_outlined,
+                        size: 50,
+                        color: _selectedVideo != null ? Colors.greenAccent : Colors.deepPurpleAccent,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        _selectedVideo != null ? "Video Selected ✅ (Tap to Change)" : "Tap to Select Video from Gallery",
+                        style: TextStyle(color: _selectedVideo != null ? Colors.greenAccent : Colors.white70),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -99,7 +163,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 controller: _titleController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  labelText: "Video Title / Topic",
+                  labelText: "Lesson Title",
                   labelStyle: const TextStyle(color: Colors.white54),
                   filled: true,
                   fillColor: const Color(0xFF1E1E2C),
@@ -111,7 +175,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 controller: _tagsController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  labelText: "Hashtags (e.g. #coding #python)",
+                  labelText: "Tags (e.g. #python #ai)",
                   labelStyle: const TextStyle(color: Colors.white54),
                   filled: true,
                   fillColor: const Color(0xFF1E1E2C),
@@ -119,6 +183,12 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
               ),
               const SizedBox(height: 25),
+              if (_isUploading) ...[
+                LinearProgressIndicator(value: _uploadProgress, color: Colors.deepPurpleAccent, backgroundColor: Colors.white12),
+                const SizedBox(height: 10),
+                Text("${(_uploadProgress * 100).toStringAsFixed(1)}%", style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 15),
+              ],
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -127,21 +197,22 @@ class _UploadScreenState extends State<UploadScreen> {
                     backgroundColor: Colors.deepPurpleAccent,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: _isUploading ? null : _startUploadProcess,
+                  onPressed: _isUploading ? null : _uploadVideoToR2,
                   child: _isUploading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Generate Direct Upload Link", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      : const Text("Publish Video to Cloudflare R2", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
-              if (_uploadStatus != null) ...[
+              if (_statusMessage != null) ...[
                 const SizedBox(height: 20),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(14),
+                  width: double.infinity,
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E1E2C),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(_uploadStatus!, style: const TextStyle(color: Colors.amberAccent, fontSize: 13)),
+                  child: Text(_statusMessage!, style: const TextStyle(color: Colors.amberAccent, fontSize: 13)),
                 )
               ]
             ],
