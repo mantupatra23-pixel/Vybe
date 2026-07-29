@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:video_player/video_player.dart';
@@ -147,7 +148,6 @@ class _NetworkVideoItemState extends State<NetworkVideoItem> {
         }
       });
 
-    // Register View to API
     Dio().post(AppConstants.getViewUrl(widget.videoId)).catchError((_) {});
   }
 
@@ -200,7 +200,6 @@ class _NetworkVideoItemState extends State<NetworkVideoItem> {
               ? AspectRatio(aspectRatio: _controller!.value.aspectRatio, child: VideoPlayer(_controller!))
               : const CircularProgressIndicator(color: Colors.deepPurpleAccent),
         ),
-        // Overlay Details
         Positioned(
           left: 16,
           bottom: 30,
@@ -224,7 +223,6 @@ class _NetworkVideoItemState extends State<NetworkVideoItem> {
             ],
           ),
         ),
-        // Side Buttons (YouTube Style)
         Positioned(
           right: 16,
           bottom: 40,
@@ -253,7 +251,6 @@ class _NetworkVideoItemState extends State<NetworkVideoItem> {
   }
 }
 
-// Dynamic Comments Drawer Widget
 class DynamicCommentsWidget extends StatefulWidget {
   final int videoId;
   const DynamicCommentsWidget({super.key, required this.videoId});
@@ -332,7 +329,6 @@ class _DynamicCommentsWidgetState extends State<DynamicCommentsWidget> {
   }
 }
 
-// Dynamic AI Quiz Widget
 class DynamicQuizWidget extends StatelessWidget {
   final List<dynamic> quizzes;
   const DynamicQuizWidget({super.key, required this.quizzes});

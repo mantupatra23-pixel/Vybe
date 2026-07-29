@@ -8,6 +8,7 @@ class AppConstants {
   static const String audioLibraryUrl = "$baseUrl/api/v1/audio/library";
   static const String leaderboardUrl = "$baseUrl/api/v1/leaderboard";
   static const String updateScoreUrl = "$baseUrl/api/v1/user/score";
+  static const String versionCheckUrl = "$baseUrl/api/v1/app/latest-version";
 
   static String getQuizzesUrl(int videoId) => "$baseUrl/api/v1/quizzes/$videoId";
   static String getLikeUrl(int videoId) => "$baseUrl/api/v1/videos/$videoId/like";
