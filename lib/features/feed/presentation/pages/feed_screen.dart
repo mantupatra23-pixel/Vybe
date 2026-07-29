@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:video_player/video_player.dart';
-import '../../../../features/quiz/presentation/widgets/quiz_dialog.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -10,53 +10,117 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  // 3 Demo Cloud Videos for testing
-  final List<String> videoUrls = [
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-  ];
+  List<dynamic> _videos = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  final String feedApiUrl = "https://vybe-backend-fbsi.onrender.com/api/v1/videos/feed";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchFeedVideos();
+  }
+
+  Future<void> _fetchFeedVideos() async {
+    try {
+      final response = await Dio().get(feedApiUrl);
+      if (response.data["success"] == true) {
+        setState(() {
+          _videos = response.data["videos"];
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Failed to load videos feed: $e";
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: PageView.builder(
-        scrollDirection: Axis.vertical,
-        itemCount: videoUrls.length,
-        itemBuilder: (context, index) {
-          return VideoFeedItem(
-            videoUrl: videoUrls[index],
-            index: index,
-          );
-        },
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Colors.deepPurpleAccent))
+          : _errorMessage != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.redAccent, size: 50),
+                        const SizedBox(height: 10),
+                        Text(_errorMessage!, style: const TextStyle(color: Colors.white70), textAlign: TextAlign.center),
+                        const SizedBox(height: 15),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() => _isLoading = true);
+                            _fetchFeedVideos();
+                          },
+                          child: const Text("Retry"),
+                        )
+                      ],
+                    ),
+                  ),
+                )
+              : _videos.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "No videos uploaded yet!\nTap '+' to upload the first lesson 🚀",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white54, fontSize: 16),
+                      ),
+                    )
+                  : PageView.builder(
+                      scrollDirection: Axis.vertical,
+                      itemCount: _videos.length,
+                      itemBuilder: (context, index) {
+                        final video = _videos[index];
+                        return NetworkVideoItem(
+                          videoUrl: video["cdn_url"],
+                          title: video["title"] ?? "Untitled Lesson",
+                          tags: video["tags"] ?? "",
+                        );
+                      },
+                    ),
     );
   }
 }
 
-class VideoFeedItem extends StatefulWidget {
+class NetworkVideoItem extends StatefulWidget {
   final String videoUrl;
-  final int index;
-  const VideoFeedItem({super.key, required this.videoUrl, required this.index});
+  final String title;
+  final String tags;
+
+  const NetworkVideoItem({
+    super.key,
+    required final this.videoUrl,
+    required final this.title,
+    required final this.tags,
+  });
 
   @override
-  State<VideoFeedItem> createState() => _VideoFeedItemState();
+  State<NetworkVideoItem> createState() => _NetworkVideoItemState();
 }
 
-class _VideoFeedItemState extends State<VideoFeedItem> {
+class _NetworkVideoItemState extends State<NetworkVideoItem> {
   late VideoPlayerController _controller;
-  bool isLiked = false;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize Real Video
     _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
       ..initialize().then((_) {
+        setState(() {
+          _isInitialized = true;
+        });
         _controller.setLooping(true);
         _controller.play();
-        setState(() {});
       });
   }
 
@@ -69,115 +133,61 @@ class _VideoFeedItemState extends State<VideoFeedItem> {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      fit: StackFit.expand,
       children: [
-        // 1. Real Video Player with Tap to Pause/Play
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              _controller.value.isPlaying ? _controller.pause() : _controller.play();
-            });
-          },
-          child: Container(
-            color: Colors.black,
-            child: _controller.value.isInitialized
-                ? SizedBox.expand(
-                    child: FittedBox(
-                      fit: BoxFit.cover,
-                      child: SizedBox(
-                        width: _controller.value.size.width,
-                        height: _controller.value.size.height,
-                        child: VideoPlayer(_controller),
-                      ),
-                    ),
-                  )
-                : const Center(child: CircularProgressIndicator(color: Colors.deepPurpleAccent)),
-          ),
+        Center(
+          child: _isInitialized
+              ? AspectRatio(
+                  aspectRatio: _controller.value.aspectRatio,
+                  child: VideoPlayer(_controller),
+                )
+              : const CircularProgressIndicator(color: Colors.deepPurpleAccent),
         ),
-
-        // Pause Icon Overlay
-        if (!_controller.value.isPlaying && _controller.value.isInitialized)
-          const Center(
-            child: Icon(Icons.play_arrow, size: 80, color: Colors.white54),
-          ),
-
-        // 2. Bottom Info (Number removed, Person Icon added!)
+        // Video Overlay Info
         Positioned(
+          left: 16,
           bottom: 30,
-          left: 15,
           right: 80,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.deepPurpleAccent,
-                    child: Icon(Icons.person, color: Colors.white, size: 22),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "@creator_${widget.index + 1}",
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                ],
+              Text(
+                widget.title,
+                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 10),
-              const Text(
-                "Learn Python in 30 Seconds! 🚀 #coding #vybe",
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
+              if (widget.tags.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  widget.tags,
+                  style: const TextStyle(color: Colors.deepPurpleAccent, fontWeight: FontWeight.w600),
+                ),
+              ],
             ],
           ),
         ),
-
-        // 3. Side Action Buttons
+        // Side Action Buttons
         Positioned(
-          right: 15,
+          right: 16,
           bottom: 40,
           child: Column(
             children: [
-              _buildActionButton(
-                icon: isLiked ? Icons.favorite : Icons.favorite_border,
-                color: isLiked ? Colors.redAccent : Colors.white,
-                label: "1.2k",
-                onTap: () => setState(() => isLiked = !isLiked),
+              IconButton(
+                icon: const Icon(Icons.favorite_border, color: Colors.white, size: 30),
+                onPressed: () {},
               ),
-              const SizedBox(height: 20),
-              _buildActionButton(
-                icon: Icons.quiz,
-                color: Colors.amberAccent,
-                label: "Quiz",
-                onTap: () {
-                  _controller.pause(); // Pause video when opening Quiz
-                  QuizDialog.show(context);
-                },
+              const SizedBox(height: 15),
+              IconButton(
+                icon: const Icon(Icons.quiz_outlined, color: Colors.amberAccent, size: 30),
+                onPressed: () {},
               ),
-              const SizedBox(height: 20),
-              _buildActionButton(
-                icon: Icons.share,
-                color: Colors.white,
-                label: "Share",
-                onTap: () {},
+              const SizedBox(height: 15),
+              IconButton(
+                icon: const Icon(Icons.share, color: Colors.white, size: 28),
+                onPressed: () {},
               ),
             ],
           ),
-        ),
+        )
       ],
-    );
-  }
-
-  Widget _buildActionButton({required IconData icon, required Color color, required String label, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
-        ],
-      ),
     );
   }
 }
