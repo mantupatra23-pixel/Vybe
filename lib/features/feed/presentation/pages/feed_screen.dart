@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../quiz/presentation/widgets/quiz_dialog.dart';
+import '../../../../features/quiz/presentation/widgets/quiz_dialog.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -24,7 +24,6 @@ class _FeedScreenState extends State<FeedScreen> {
           return Stack(
             fit: StackFit.expand,
             children: [
-              // Placeholder Video / Visual Container
               Container(
                 color: const Color(0xFF121218),
                 child: Center(
@@ -38,8 +37,6 @@ class _FeedScreenState extends State<FeedScreen> {
                   ),
                 ),
               ),
-
-              // Overlay Information
               Positioned(
                 bottom: 30,
                 left: 15,
@@ -62,15 +59,13 @@ class _FeedScreenState extends State<FeedScreen> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Text(
+                    const Text(
                       "Learn Python in 30 Seconds! 🚀 #coding #vybe #tech",
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                   ],
                 ),
               ),
-
-              // Side Action Buttons
               Positioned(
                 right: 15,
                 bottom: 40,
@@ -79,7 +74,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     _buildActionButton(
                       icon: isLiked ? Icons.favorite : Icons.favorite_border,
                       color: isLiked ? Colors.redAccent : Colors.white,
-                      label: isLiked ? "1.2k" : "1.2k",
+                      label: "1.2k",
                       onTap: () {
                         setState(() {
                           likedStatus[index] = !isLiked;

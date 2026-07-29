@@ -19,7 +19,7 @@ class QuizDialog extends StatefulWidget {
 class _QuizDialogState extends State<QuizDialog> {
   int selectedOption = -1;
   bool showResult = false;
-  final int correctIndex = 1; // Correct answer index
+  final int correctIndex = 1;
 
   final List<String> options = [
     "A) print('Hello')",
