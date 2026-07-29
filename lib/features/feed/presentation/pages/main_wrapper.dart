@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'feed_screen.dart';
 import '../../../../features/quiz/presentation/pages/leaderboard_screen.dart';
 import '../../../../features/profile/presentation/pages/profile_screen.dart';
+import '../../../../features/upload/presentation/pages/upload_screen.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -16,7 +17,7 @@ class _MainWrapperState extends State<MainWrapper> {
   final List<Widget> _screens = [
     const FeedScreen(),
     const Center(child: Text("Discover & Search", style: TextStyle(color: Colors.white, fontSize: 18))),
-    const Center(child: Text("Upload Video (Client-Side)", style: TextStyle(color: Colors.white, fontSize: 18))),
+    const UploadScreen(),
     const LeaderboardScreen(),
     const ProfileScreen(),
   ];
