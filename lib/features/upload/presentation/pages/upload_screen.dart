@@ -50,16 +50,17 @@ class _UploadScreenState extends State<UploadScreen> {
     setState(() {
       _isUploading = true;
       _uploadProgress = 0.0;
-      _statusMessage = "Step 1/2: Fetching Cloudflare Signed URL from Render...";
+      _statusMessage = "Step 1/2: Requesting presigned URL from Render...";
     });
 
     try {
       final dio = Dio();
       String fileName = "video_${DateTime.now().millisecondsSinceEpoch}.mp4";
 
-      // 1. Fetch Presigned URL from FastAPI Render
       final presignedResponse = await dio.post(backendUrl, data: {
         "file_name": fileName,
+        "title": _titleController.text.trim(),
+        "tags": _tagsController.text.trim(),
         "content_type": "video/mp4"
       });
 
@@ -68,10 +69,9 @@ class _UploadScreenState extends State<UploadScreen> {
         String cdnUrl = presignedResponse.data["cdn_url"];
 
         setState(() {
-          _statusMessage = "Step 2/2: Direct Uploading Video to Cloudflare R2...";
+          _statusMessage = "Step 2/2: Uploading video to Cloudflare R2...";
         });
 
-        // 2. Direct Upload File to Cloudflare R2 bucket using HTTP PUT
         int fileSize = await _selectedVideo!.length();
         Stream<List<int>> fileStream = _selectedVideo!.openRead();
 
@@ -92,14 +92,14 @@ class _UploadScreenState extends State<UploadScreen> {
         );
 
         setState(() {
-          _statusMessage = "🎉 Success! Video uploaded to R2.\nCDN URL:\n$cdnUrl";
+          _statusMessage = "🎉 Success! Video uploaded & AI Quiz Generated!\nCDN URL:\n$cdnUrl";
           _selectedVideo = null;
           _titleController.clear();
           _tagsController.clear();
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Video Uploaded Successfully!")),
+          const SnackBar(content: Text("Video Published Successfully!")),
         );
       }
     } catch (e) {
