@@ -24,11 +24,18 @@ jobs:
         with:
           channel: 'stable'
 
+      - name: Create Native Android Project Files if missing
+        run: |
+          if [ ! -d "android" ]; then
+            echo "Android folder missing, creating native template..."
+            flutter create . --platforms=android --org=com.vybe.app
+          fi
+
       - name: Install Dependencies
         run: flutter pub get
 
       - name: Build APK (Release)
-        run: flutter build apk --release --no-pub
+        run: flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
