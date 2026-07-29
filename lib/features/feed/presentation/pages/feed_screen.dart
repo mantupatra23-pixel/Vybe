@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import '../../quiz/presentation/widgets/quiz_dialog.dart';
 
-class FeedScreen extends StatelessWidget {
+class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
+
+  @override
+  State<FeedScreen> createState() => _FeedScreenState();
+}
+
+class _FeedScreenState extends State<FeedScreen> {
+  final Map<int, bool> likedStatus = {};
 
   @override
   Widget build(BuildContext context) {
@@ -11,18 +19,27 @@ class FeedScreen extends StatelessWidget {
         scrollDirection: Axis.vertical,
         itemCount: 5,
         itemBuilder: (context, index) {
+          final isLiked = likedStatus[index] ?? false;
+
           return Stack(
             fit: StackFit.expand,
             children: [
-              // Placeholder Video Background
+              // Placeholder Video / Visual Container
               Container(
-                color: Colors.blueGrey[900],
+                color: const Color(0xFF121218),
                 child: Center(
-                  child: Icon(Icons.play_circle_outline, size: 80, color: Colors.white70),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.play_circle_outline, size: 80, color: Colors.deepPurpleAccent.withOpacity(0.8)),
+                      const SizedBox(height: 12),
+                      Text("Short Video #$index", style: const TextStyle(color: Colors.white54, fontSize: 16)),
+                    ],
+                  ),
                 ),
               ),
 
-              // Overlay Information & Actions
+              // Overlay Information
               Positioned(
                 bottom: 30,
                 left: 15,
@@ -30,11 +47,21 @@ class FeedScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "@creator_$index",
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: Colors.deepPurpleAccent,
+                          child: Text("${index + 1}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          "@creator_${index + 1}",
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Text(
                       "Learn Python in 30 Seconds! 🚀 #coding #vybe #tech",
                       style: const TextStyle(color: Colors.white70, fontSize: 14),
@@ -43,17 +70,40 @@ class FeedScreen extends StatelessWidget {
                 ),
               ),
 
-              // Side Action Buttons (Like, Quiz, Share)
+              // Side Action Buttons
               Positioned(
                 right: 15,
                 bottom: 40,
                 child: Column(
                   children: [
-                    _buildActionButton(Icons.favorite, "1.2k"),
+                    _buildActionButton(
+                      icon: isLiked ? Icons.favorite : Icons.favorite_border,
+                      color: isLiked ? Colors.redAccent : Colors.white,
+                      label: isLiked ? "1.2k" : "1.2k",
+                      onTap: () {
+                        setState(() {
+                          likedStatus[index] = !isLiked;
+                        });
+                      },
+                    ),
                     const SizedBox(height: 20),
-                    _buildActionButton(Icons.quiz, "Quiz"),
+                    _buildActionButton(
+                      icon: Icons.quiz,
+                      color: Colors.amberAccent,
+                      label: "Quiz",
+                      onTap: () => QuizDialog.show(context),
+                    ),
                     const SizedBox(height: 20),
-                    _buildActionButton(Icons.share, "Share"),
+                    _buildActionButton(
+                      icon: Icons.share,
+                      color: Colors.white,
+                      label: "Share",
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Link copied to clipboard! 🚀")),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -64,13 +114,21 @@ class FeedScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(IconData icon, String label) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white, size: 32),
-        const SizedBox(height: 4),
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
-      ],
+  Widget _buildActionButton({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 32),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+        ],
+      ),
     );
   }
 }
