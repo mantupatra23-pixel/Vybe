@@ -23,8 +23,20 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Future<void> _fetchFeedVideos() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
     try {
-      final response = await Dio().get(feedApiUrl);
+      final response = await Dio().get(
+        feedApiUrl,
+        options: Options(
+          connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 15),
+        ),
+      );
+
       if (response.data["success"] == true) {
         setState(() {
           _videos = response.data["videos"];
@@ -33,7 +45,7 @@ class _FeedScreenState extends State<FeedScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = "Failed to load videos feed: $e";
+        _errorMessage = "Connection Error: Please ensure backend is live on Render.";
         _isLoading = false;
       });
     }
@@ -52,16 +64,14 @@ class _FeedScreenState extends State<FeedScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline, color: Colors.redAccent, size: 50),
+                        const Icon(Icons.wifi_off_rounded, color: Colors.redAccent, size: 50),
                         const SizedBox(height: 10),
                         Text(_errorMessage!, style: const TextStyle(color: Colors.white70), textAlign: TextAlign.center),
-                        const SizedBox(height: 15),
+                        const SizedBox(height: 20),
                         ElevatedButton(
-                          onPressed: () {
-                            setState(() => _isLoading = true);
-                            _fetchFeedVideos();
-                          },
-                          child: const Text("Retry"),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurpleAccent),
+                          onPressed: _fetchFeedVideos,
+                          child: const Text("Retry Connection", style: TextStyle(color: Colors.white)),
                         )
                       ],
                     ),
@@ -70,7 +80,7 @@ class _FeedScreenState extends State<FeedScreen> {
               : _videos.isEmpty
                   ? const Center(
                       child: Text(
-                        "No videos uploaded yet!\nTap '+' to upload the first lesson 🚀",
+                        "No videos available yet!\nTap '+' to upload a lesson 🚀",
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.white54, fontSize: 16),
                       ),
@@ -81,8 +91,9 @@ class _FeedScreenState extends State<FeedScreen> {
                       itemBuilder: (context, index) {
                         final video = _videos[index];
                         return NetworkVideoItem(
+                          videoId: video["id"],
                           videoUrl: video["cdn_url"],
-                          title: video["title"] ?? "Untitled Lesson",
+                          title: video["title"] ?? "Micro Lesson",
                           tags: video["tags"] ?? "",
                         );
                       },
@@ -92,15 +103,17 @@ class _FeedScreenState extends State<FeedScreen> {
 }
 
 class NetworkVideoItem extends StatefulWidget {
+  final int videoId;
   final String videoUrl;
   final String title;
   final String tags;
 
   const NetworkVideoItem({
     super.key,
-    required final this.videoUrl,
-    required final this.title,
-    required final this.tags,
+    required this.videoId,
+    required this.videoUrl,
+    required this.title,
+    required this.tags,
   });
 
   @override
@@ -108,25 +121,33 @@ class NetworkVideoItem extends StatefulWidget {
 }
 
 class _NetworkVideoItemState extends State<NetworkVideoItem> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? _controller;
   bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
-      ..initialize().then((_) {
-        setState(() {
-          _isInitialized = true;
+    _initPlayer();
+  }
+
+  void _initPlayer() {
+    try {
+      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
+        ..initialize().then((_) {
+          if (mounted) {
+            setState(() {
+              _isInitialized = true;
+            });
+            _controller?.setLooping(true);
+            _controller?.play();
+          }
         });
-        _controller.setLooping(true);
-        _controller.play();
-      });
+    } catch (_) {}
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -135,14 +156,13 @@ class _NetworkVideoItemState extends State<NetworkVideoItem> {
     return Stack(
       children: [
         Center(
-          child: _isInitialized
+          child: _isInitialized && _controller != null
               ? AspectRatio(
-                  aspectRatio: _controller.value.aspectRatio,
-                  child: VideoPlayer(_controller),
+                  aspectRatio: _controller!.value.aspectRatio,
+                  child: VideoPlayer(_controller!),
                 )
               : const CircularProgressIndicator(color: Colors.deepPurpleAccent),
         ),
-        // Video Overlay Info
         Positioned(
           left: 16,
           bottom: 30,
@@ -164,29 +184,6 @@ class _NetworkVideoItemState extends State<NetworkVideoItem> {
             ],
           ),
         ),
-        // Side Action Buttons
-        Positioned(
-          right: 16,
-          bottom: 40,
-          child: Column(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.favorite_border, color: Colors.white, size: 30),
-                onPressed: () {},
-              ),
-              const SizedBox(height: 15),
-              IconButton(
-                icon: const Icon(Icons.quiz_outlined, color: Colors.amberAccent, size: 30),
-                onPressed: () {},
-              ),
-              const SizedBox(height: 15),
-              IconButton(
-                icon: const Icon(Icons.share, color: Colors.white, size: 28),
-                onPressed: () {},
-              ),
-            ],
-          ),
-        )
       ],
     );
   }
