@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'screens/onboarding_auth_screen.dart';
 import 'screens/upload_screen.dart';
 import 'screens/ranks_screen.dart';
@@ -8,7 +9,13 @@ import 'widgets/real_video_card.dart';
 import 'services/api_service.dart';
 import 'services/update_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    print("Firebase Init Error: $e");
+  }
   runApp(const VybeApp());
 }
 
