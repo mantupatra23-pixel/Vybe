@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/upload_screen.dart';
 import 'screens/ranks_screen.dart';
 import 'screens/profile_screen.dart';
-import 'widgets/video_action_bar.dart';
-import 'widgets/tip_modal.dart';
+import 'widgets/real_video_card.dart';
 
 void main() {
   runApp(const VybeApp());
@@ -88,21 +87,17 @@ class VerticalFeedScreen extends StatelessWidget {
     final List<Map<String, dynamic>> feedItems = [
       {
         "creator": "@Vybe Creator",
-        "title": "Autonomous AI Video Generator Pipeline ⚡",
+        "title": "Autonomous AI Video Generator Pipeline ⚡ (Neon DB Connected)",
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-leaves-low-angle-shot-40033-large.mp4",
         "likes": 248,
         "comments": 34
       },
       {
         "creator": "@AI Academy",
         "title": "What is Artificial Intelligence in 30 Seconds?",
+        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-vertical-shot-of-a-neon-lit-street-at-night-41544-large.mp4",
         "likes": 512,
         "comments": 89
-      },
-      {
-        "creator": "@Code Craft",
-        "title": "Flutter 3.19 + FastAPI Fullstack Setup",
-        "likes": 189,
-        "comments": 12
       }
     ];
 
@@ -111,154 +106,8 @@ class VerticalFeedScreen extends StatelessWidget {
       itemCount: feedItems.length,
       itemBuilder: (context, index) {
         final item = feedItems[index];
-        return FeedItemCard(item: item);
+        return RealVideoCard(item: item);
       },
-    );
-  }
-}
-
-class FeedItemCard extends StatelessWidget {
-  final Map<String, dynamic> item;
-
-  const FeedItemCard({super.key, required this.item});
-
-  void _openTipSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: TipModal(creatorName: item["creator"]),
-      ),
-    );
-  }
-
-  void _showCommentsSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.grey[900],
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          height: 400,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Center(
-                child: Text(
-                  'Comments',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ),
-              const Divider(color: Colors.white24),
-              Expanded(
-                child: ListView(
-                  children: const [
-                    ListTile(
-                      leading: CircleAvatar(backgroundColor: Colors.amber, child: Text('A')),
-                      title: Text('Alex', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                      subtitle: Text('Insane smooth reel transitions! 🔥', style: TextStyle(color: Colors.white)),
-                    ),
-                    ListTile(
-                      leading: CircleAvatar(backgroundColor: Colors.blue, child: Text('M')),
-                      title: Text('Mantu', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                      subtitle: Text('Fullstack Flutter + Termux setup ready 🚀', style: TextStyle(color: Colors.white)),
-                    ),
-                  ],
-                ),
-              ),
-              TextField(
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Add a comment...',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  suffixIcon: const Icon(Icons.send, color: Colors.amber),
-                  filled: true,
-                  fillColor: Colors.black,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Reel Video Card Placeholder
-        Container(
-          width: double.infinity,
-          height: double.infinity,
-          color: Colors.black,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.play_circle_fill, size: 70, color: Colors.amber),
-                const SizedBox(height: 12),
-                Text(
-                  'Swipe Up for Next Reel 👆',
-                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Bottom Creator Info Overlay
-        Positioned(
-          left: 16,
-          bottom: 20,
-          right: 80,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item["creator"],
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                item["title"],
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-              const SizedBox(height: 14),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                ),
-                onPressed: () => _openTipSheet(context),
-                icon: const Icon(Icons.flash_on, size: 18),
-                label: const Text('Tip \$', style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-        ),
-
-        // Right Overlay Action Bar
-        Positioned(
-          right: 16,
-          bottom: 30,
-          child: VideoActionBar(
-            initialLikes: item["likes"],
-            commentsCount: item["comments"],
-            onCommentPressed: () => _showCommentsSheet(context),
-          ),
-        ),
-      ],
     );
   }
 }

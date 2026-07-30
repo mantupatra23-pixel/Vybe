@@ -1,8 +1,7 @@
 name: vybe
-description: "Vybe Mobile App"
+description: "Vybe Short Video App"
 publish_to: 'none'
-
-version: 1.0.1+2
+version: 1.0.0+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -11,16 +10,13 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  dio: ^5.4.1
   video_player: ^2.8.2
-  image_picker: ^1.0.7
-  url_launcher: ^6.2.5
-  package_info_plus: ^8.0.0
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
