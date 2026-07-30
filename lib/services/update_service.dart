@@ -94,8 +94,10 @@ class UpdateService {
               ),
               onPressed: () async {
                 final Uri url = Uri.parse(downloadUrl);
-                if (await canLaunchUrl(url)) {
+                try {
                   await launchUrl(url, mode: LaunchMode.externalApplication);
+                } catch (e) {
+                  print("Launch Error: $e");
                 }
               },
               child: const Text('Update Now', style: TextStyle(fontWeight: FontWeight.bold)),
