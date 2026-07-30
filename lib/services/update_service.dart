@@ -6,10 +6,9 @@ import 'package:url_launcher/url_launcher.dart';
 class UpdateService {
   static const String currentAppVersion = "1.0.1";
   static const int currentBuildNumber = 1;
-  static const String updateApiUrl = "https://vybe-backend.onrender.com/api/v1/app/latest-version";
+  static const String updateApiUrl = "https://vybe-backend-fbsl.onrender.com/api/v1/app/latest-version";
 
   static Future<void> checkForUpdates(BuildContext context) async {
-    // Wait 2 seconds for app frame and rendering initialization
     await Future.delayed(const Duration(seconds: 2));
 
     try {
@@ -29,7 +28,7 @@ class UpdateService {
         }
       }
     } catch (e) {
-      print("Update Check Retry Error: $e");
+      print("Update Check Error: $e");
     }
   }
 

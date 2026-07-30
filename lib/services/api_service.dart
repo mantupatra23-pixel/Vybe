@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "https://vybe-backend.onrender.com";
+  static const String baseUrl = "https://vybe-backend-fbsl.onrender.com";
 
   static Future<List<Map<String, dynamic>>> fetchSmartFeed() async {
     try {
@@ -32,14 +32,6 @@ class ApiService {
         "video_url": "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-leaves-low-angle-shot-40033-large.mp4",
         "likes": 248,
         "comments": 34
-      },
-      {
-        "id": 2,
-        "creator": "@AI Academy",
-        "title": "What is Artificial Intelligence in 30 Seconds?",
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-vertical-shot-of-a-neon-lit-street-at-night-41544-large.mp4",
-        "likes": 512,
-        "comments": 89
       }
     ];
   }

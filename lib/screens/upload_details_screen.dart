@@ -20,16 +20,17 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
   double _progress = 0.0;
   String _statusText = "";
 
+  static const String liveBackendUrl = "https://vybe-backend-fbsl.onrender.com";
+
   @override
   void initState() {
     super.initState();
     _wakeUpServer();
   }
 
-  // Silent ping so server is ready before user taps Upload
   Future<void> _wakeUpServer() async {
     try {
-      await http.get(Uri.parse('https://vybe-backend.onrender.com/')).timeout(const Duration(seconds: 5));
+      await http.get(Uri.parse(liveBackendUrl)).timeout(const Duration(seconds: 5));
     } catch (_) {}
   }
 
@@ -129,41 +130,27 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
     setState(() {
       _isUploading = true;
       _progress = 0.15;
-      _statusText = "Preparing upload...";
+      _statusText = "Connecting to server...";
     });
 
     try {
       final fileName = widget.videoFile.path.split('/').last;
 
-      // 1. Request Secure Presigned Link with automatic retries
-      http.Response? presignedRes;
-      int retries = 4;
+      final presignedRes = await http.post(
+        Uri.parse('$liveBackendUrl/api/v1/videos/generate-upload-url'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'file_name': fileName,
+          'title': _captionController.text.trim(),
+          'tags': '#vybe #viral',
+          'creator_name': '@MantuPatra',
+          'audio_track': 'Original Sound',
+          'content_type': 'video/mp4'
+        }),
+      ).timeout(const Duration(seconds: 30));
 
-      while (retries > 0) {
-        try {
-          setState(() => _statusText = retries < 4 ? "Connecting to server..." : "Preparing upload...");
-          presignedRes = await http.post(
-            Uri.parse('https://vybe-backend.onrender.com/api/v1/videos/generate-upload-url'),
-            headers: {'Content-Type': 'application/json'},
-            body: json.encode({
-              'file_name': fileName,
-              'title': _captionController.text.trim(),
-              'tags': '#vybe #viral',
-              'creator_name': '@MantuPatra',
-              'audio_track': 'Original Sound',
-              'content_type': 'video/mp4'
-            }),
-          ).timeout(const Duration(seconds: 30));
-
-          if (presignedRes.statusCode == 200) break;
-        } catch (_) {
-          retries--;
-          await Future.delayed(const Duration(seconds: 3));
-        }
-      }
-
-      if (presignedRes == null || presignedRes.statusCode != 200) {
-        throw Exception("Connection timed out. Please tap Upload Short again.");
+      if (presignedRes.statusCode != 200) {
+        throw Exception("Server Error (${presignedRes.statusCode})");
       }
 
       setState(() {
@@ -174,7 +161,6 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
       final data = json.decode(presignedRes.body);
       final String uploadUrl = data['upload_url'] ?? data['cdn_url'];
 
-      // 2. Direct High-Speed Binary Stream Upload
       final bytes = await widget.videoFile.readAsBytes();
       final uploadRes = await http.put(
         Uri.parse(uploadUrl),
@@ -195,7 +181,7 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
           Navigator.popUntil(context, (route) => route.isFirst);
         }
       } else {
-        throw Exception("Upload failed (${uploadRes.statusCode}). Please try again.");
+        throw Exception("Upload failed (${uploadRes.statusCode})");
       }
     } catch (e) {
       if (mounted) {
