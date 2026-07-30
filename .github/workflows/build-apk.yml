@@ -1,17 +1,16 @@
-name: Vybe Production APK Build
+name: Vybe Production Build
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up Java 17
@@ -20,24 +19,20 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Flutter 3.19.6
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.6'
+          channel: 'stable'
 
-      - name: Fetch Dependencies
+      - name: Get Dependencies
         run: flutter pub get
 
       - name: Build Release APK
         run: flutter build apk --release --no-tree-shake-icons
 
-      - name: Prepare Artifact
-        run: |
-          mkdir -p build/app/outputs/flutter-apk/
-          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/Vybe-APK.apk
-
-      - name: Upload Vybe Release APK
+      - name: Upload Uncompressed Raw APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Vybe-Release-APK
-          path: build/app/outputs/flutter-apk/Vybe-APK.apk
+          name: Vybe-Direct-App
+          path: build/app/outputs/flutter-apk/app-release.apk
+          compression-level: 0
