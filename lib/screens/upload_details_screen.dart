@@ -114,50 +114,72 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
 
     setState(() {
       _isUploading = true;
-      _progress = 0.2;
+      _progress = 0.1;
     });
 
     try {
-      // Get R2 Presigned URL
-      final presignedRes = await http.post(
-        Uri.parse('https://vybe-backend.onrender.com/api/v1/videos/generate-upload-url'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'file_name': widget.videoFile.path.split('/').last,
-          'title': _captionController.text,
-          'tags': '#vybe #viral',
-          'creator_name': '@MantuPatra',
-          'audio_track': 'Original Sound',
-          'content_type': 'video/mp4'
-        }),
-      );
+      final fileName = widget.videoFile.path.split('/').last;
 
-      if (presignedRes.statusCode == 200) {
-        setState(() => _progress = 0.7);
+      // 1. Request Presigned URL with Timeout & Retry
+      http.Response? presignedRes;
+      int retries = 3;
 
-        final data = json.decode(presignedRes.body);
-        final String uploadUrl = data['upload_url'];
+      while (retries > 0) {
+        try {
+          presignedRes = await http.post(
+            Uri.parse('https://vybe-backend.onrender.com/api/v1/videos/generate-upload-url'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'file_name': fileName,
+              'title': _captionController.text.trim(),
+              'tags': '#vybe #viral',
+              'creator_name': '@MantuPatra',
+              'audio_track': 'Original Sound',
+              'content_type': 'video/mp4'
+            }),
+          ).timeout(const Duration(seconds: 25));
 
-        // Direct Binary Upload to Cloudflare R2
-        final bytes = await widget.videoFile.readAsBytes();
-        await http.put(
-          Uri.parse(uploadUrl),
-          headers: {'Content-Type': 'video/mp4'},
-          body: bytes,
-        );
+          if (presignedRes.statusCode == 200) break;
+        } catch (_) {
+          retries--;
+          await Future.delayed(const Duration(seconds: 2));
+        }
+      }
 
+      if (presignedRes == null || presignedRes.statusCode != 200) {
+        throw Exception("Server waking up, please tap Upload again in a moment!");
+      }
+
+      setState(() => _progress = 0.4);
+
+      final data = json.decode(presignedRes.body);
+      final String uploadUrl = data['upload_url'] ?? data['cdn_url'];
+
+      // 2. Direct Binary Upload to Cloudflare R2 / Server
+      final bytes = await widget.videoFile.readAsBytes();
+      final uploadRes = await http.put(
+        Uri.parse(uploadUrl),
+        headers: {'Content-Type': 'video/mp4'},
+        body: bytes,
+      ).timeout(const Duration(minutes: 3));
+
+      if (uploadRes.statusCode == 200 || uploadRes.statusCode == 201) {
         setState(() => _progress = 1.0);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(backgroundColor: Colors.green, content: Text('Vybe Short Published to R2 & Neon DB! 🚀')),
+            const SnackBar(backgroundColor: Colors.green, content: Text('Vybe Short Published Successfully! 🚀')),
           );
           Navigator.popUntil(context, (route) => route.isFirst);
         }
+      } else {
+        throw Exception("Cloudflare R2 Direct Upload Failed (${uploadRes.statusCode})");
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(backgroundColor: Colors.redAccent, content: Text('$e')),
+        );
       }
     } finally {
       if (mounted) setState(() => _isUploading = false);
@@ -178,7 +200,6 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Video Thumbnail & Caption Input Box Row
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -219,7 +240,6 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
             ),
             const Divider(color: Colors.white12, height: 30),
 
-            // Creator Handle Details
             const ListTile(
               leading: CircleAvatar(backgroundColor: Colors.amber, child: Icon(Icons.person, color: Colors.black)),
               title: Text('MANTU PATRA', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -227,7 +247,6 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
             ),
             const Divider(color: Colors.white12),
 
-            // Visibility Selector
             ListTile(
               leading: const Icon(Icons.language, color: Colors.white),
               title: const Text('Visibility', style: TextStyle(color: Colors.white54, fontSize: 12)),
@@ -237,7 +256,6 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
             ),
             const Divider(color: Colors.white12),
 
-            // Audience Selector
             ListTile(
               leading: const Icon(Icons.people_alt_outlined, color: Colors.white),
               title: const Text('Select audience', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
