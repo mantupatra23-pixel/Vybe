@@ -1,4 +1,4 @@
-package com.example.vybe
+package 
 
 import io.flutter.embedding.android.FlutterActivity
 
