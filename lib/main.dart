@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/upload_screen.dart';
 import 'screens/ranks_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/live_grid_screen.dart';
 import 'widgets/real_video_card.dart';
 
 void main() {
@@ -36,6 +37,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final List<Widget> _screens = [
     const VerticalFeedScreen(),
+    const LiveGridScreen(),
     const UploadScreen(),
     const RanksScreen(),
     const ProfileScreen(),
@@ -60,6 +62,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.play_arrow_rounded),
             label: 'Feed',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.sensors),
+            label: 'Live',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_circle_outline),
@@ -87,7 +93,7 @@ class VerticalFeedScreen extends StatelessWidget {
     final List<Map<String, dynamic>> feedItems = [
       {
         "creator": "@Vybe Creator",
-        "title": "Autonomous AI Video Generator Pipeline ⚡ (Neon DB Connected)",
+        "title": "Autonomous AI Video Generator Pipeline ⚡",
         "video_url": "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-leaves-low-angle-shot-40033-large.mp4",
         "likes": 248,
         "comments": 34
