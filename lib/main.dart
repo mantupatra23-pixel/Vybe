@@ -3,6 +3,7 @@ import 'screens/upload_screen.dart';
 import 'screens/ranks_screen.dart';
 import 'screens/profile_screen.dart';
 import 'widgets/video_action_bar.dart';
+import 'widgets/tip_modal.dart';
 
 void main() {
   runApp(const VybeApp());
@@ -35,7 +36,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const FeedScreen(),
+    const VerticalFeedScreen(),
     const UploadScreen(),
     const RanksScreen(),
     const ProfileScreen(),
@@ -79,10 +80,61 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 }
 
-class FeedScreen extends StatelessWidget {
-  const FeedScreen({super.key});
+class VerticalFeedScreen extends StatelessWidget {
+  const VerticalFeedScreen({super.key});
 
-  void _showCommentsBottomSheet(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> feedItems = [
+      {
+        "creator": "@Vybe Creator",
+        "title": "Autonomous AI Video Generator Pipeline ⚡",
+        "likes": 248,
+        "comments": 34
+      },
+      {
+        "creator": "@AI Academy",
+        "title": "What is Artificial Intelligence in 30 Seconds?",
+        "likes": 512,
+        "comments": 89
+      },
+      {
+        "creator": "@Code Craft",
+        "title": "Flutter 3.19 + FastAPI Fullstack Setup",
+        "likes": 189,
+        "comments": 12
+      }
+    ];
+
+    return PageView.builder(
+      scrollDirection: Axis.vertical,
+      itemCount: feedItems.length,
+      itemBuilder: (context, index) {
+        final item = feedItems[index];
+        return FeedItemCard(item: item);
+      },
+    );
+  }
+}
+
+class FeedItemCard extends StatelessWidget {
+  final Map<String, dynamic> item;
+
+  const FeedItemCard({super.key, required this.item});
+
+  void _openTipSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: TipModal(creatorName: item["creator"]),
+      ),
+    );
+  }
+
+  void _showCommentsSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.grey[900],
@@ -109,12 +161,12 @@ class FeedScreen extends StatelessWidget {
                     ListTile(
                       leading: CircleAvatar(backgroundColor: Colors.amber, child: Text('A')),
                       title: Text('Alex', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                      subtitle: Text('Amazing AI automation demo! 🔥', style: TextStyle(color: Colors.white)),
+                      subtitle: Text('Insane smooth reel transitions! 🔥', style: TextStyle(color: Colors.white)),
                     ),
                     ListTile(
-                      leading: CircleAvatar(backgroundColor: Colors.blue, child: Text('R')),
-                      title: Text('Rahul', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                      subtitle: Text('Super smooth video playback 🚀', style: TextStyle(color: Colors.white)),
+                      leading: CircleAvatar(backgroundColor: Colors.blue, child: Text('M')),
+                      title: Text('Mantu', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      subtitle: Text('Fullstack Flutter + Termux setup ready 🚀', style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
@@ -144,23 +196,23 @@ class FeedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Background Feed Content
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.amber),
-                  borderRadius: BorderRadius.circular(10),
+        // Reel Video Card Placeholder
+        Container(
+          width: double.infinity,
+          height: double.infinity,
+          color: Colors.black,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.play_circle_fill, size: 70, color: Colors.amber),
+                const SizedBox(height: 12),
+                Text(
+                  'Swipe Up for Next Reel 👆',
+                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
                 ),
-                child: const Text(
-                  'Vybe Feed Active',
-                  style: TextStyle(color: Colors.amber, fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
 
@@ -168,26 +220,27 @@ class FeedScreen extends StatelessWidget {
         Positioned(
           left: 16,
           bottom: 20,
+          right: 80,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '@Vybe Creator',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              Text(
+                item["creator"],
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
               ),
-              const SizedBox(height: 4),
-              const Text(
-                'Next Gen AI Video Automation Platform ⚡',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
+              const SizedBox(height: 6),
+              Text(
+                item["title"],
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.amber,
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
-                onPressed: () {},
+                onPressed: () => _openTipSheet(context),
                 icon: const Icon(Icons.flash_on, size: 18),
                 label: const Text('Tip \$', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
@@ -195,14 +248,14 @@ class FeedScreen extends StatelessWidget {
           ),
         ),
 
-        // Right Overlay Action Bar (Like, Comment, Save, Share)
+        // Right Overlay Action Bar
         Positioned(
           right: 16,
-          bottom: 40,
+          bottom: 30,
           child: VideoActionBar(
-            initialLikes: 142,
-            commentsCount: 18,
-            onCommentPressed: () => _showCommentsBottomSheet(context),
+            initialLikes: item["likes"],
+            commentsCount: item["comments"],
+            onCommentPressed: () => _showCommentsSheet(context),
           ),
         ),
       ],
