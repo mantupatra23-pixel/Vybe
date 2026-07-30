@@ -1,9 +1,10 @@
-name: Vybe Production Build
+name: Vybe Fixed Production Build
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,18 +20,20 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Flutter
+      - name: Set up Flutter (Fixed 3.19.6)
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.19.6'
           channel: 'stable'
+          cache: false
 
-      - name: Get Dependencies
+      - name: Fetch Dependencies
         run: flutter pub get
 
-      - name: Build Release APK
-        run: flutter build apk --release --no-tree-shake-icons
+      - name: Build APK without Auto-Upgrade
+        run: flutter build apk --release --no-tree-shake-icons --no-pub
 
-      - name: Upload Uncompressed Raw APK Artifact
+      - name: Upload Vybe APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Vybe-Direct-App
