@@ -17,7 +17,7 @@ class ProfileSettingsScreen extends StatelessWidget {
         children: [
           _buildSectionTitle('Account'),
           _buildSettingTile(context, Icons.rocket_launch, 'Vybe Boost', 'Boost your posts and get viral', Colors.amber),
-          _buildSettingTile(context, Icons.workspace_premium, 'Join Vybe VIP ($1/mo)', 'Zero ads & high quality AI rendering', Colors.amber),
+          _buildSettingTile(context, Icons.workspace_premium, 'Join Vybe VIP (\$1/mo)', 'Zero ads & high quality AI rendering', Colors.amber),
           _buildSettingTile(context, Icons.psychology, 'AI Creator Tools', 'Access Groq script studio & analytics', Colors.blue),
           _buildSettingTile(context, Icons.verified_user, 'Get Blue Verification Badge', 'Verify account identity', Colors.green),
           _buildSettingTile(context, Icons.lock_outline, 'Privacy Settings', 'Manage account visibility', Colors.white70),

@@ -9,9 +9,7 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
+class _ProfileScreenState extends State<ProfileScreen> {
   final Map<String, dynamic> _userData = {
     "username": "@MantuPatra",
     "name": "Mantu Patra",
@@ -22,12 +20,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     "tips_earned": "\$1,280",
     "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500"
   };
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +78,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Colors.amber, Colors.orangeDark],
+                    colors: [Colors.amber, Colors.deepOrange],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
