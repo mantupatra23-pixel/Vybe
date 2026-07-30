@@ -18,6 +18,20 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
   String _audience = "No, it's not Made for Kids";
   bool _isUploading = false;
   double _progress = 0.0;
+  String _statusText = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _wakeUpServer();
+  }
+
+  // Silent ping so server is ready before user taps Upload
+  Future<void> _wakeUpServer() async {
+    try {
+      await http.get(Uri.parse('https://vybe-backend.onrender.com/')).timeout(const Duration(seconds: 5));
+    } catch (_) {}
+  }
 
   void _showVisibilityPicker() {
     showModalBottomSheet(
@@ -114,18 +128,20 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
 
     setState(() {
       _isUploading = true;
-      _progress = 0.1;
+      _progress = 0.15;
+      _statusText = "Preparing upload...";
     });
 
     try {
       final fileName = widget.videoFile.path.split('/').last;
 
-      // 1. Request Presigned URL with Timeout & Retry
+      // 1. Request Secure Presigned Link with automatic retries
       http.Response? presignedRes;
-      int retries = 3;
+      int retries = 4;
 
       while (retries > 0) {
         try {
+          setState(() => _statusText = retries < 4 ? "Connecting to server..." : "Preparing upload...");
           presignedRes = await http.post(
             Uri.parse('https://vybe-backend.onrender.com/api/v1/videos/generate-upload-url'),
             headers: {'Content-Type': 'application/json'},
@@ -137,43 +153,49 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
               'audio_track': 'Original Sound',
               'content_type': 'video/mp4'
             }),
-          ).timeout(const Duration(seconds: 25));
+          ).timeout(const Duration(seconds: 30));
 
           if (presignedRes.statusCode == 200) break;
         } catch (_) {
           retries--;
-          await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 3));
         }
       }
 
       if (presignedRes == null || presignedRes.statusCode != 200) {
-        throw Exception("Server waking up, please tap Upload again in a moment!");
+        throw Exception("Connection timed out. Please tap Upload Short again.");
       }
 
-      setState(() => _progress = 0.4);
+      setState(() {
+        _progress = 0.50;
+        _statusText = "Uploading video...";
+      });
 
       final data = json.decode(presignedRes.body);
       final String uploadUrl = data['upload_url'] ?? data['cdn_url'];
 
-      // 2. Direct Binary Upload to Cloudflare R2 / Server
+      // 2. Direct High-Speed Binary Stream Upload
       final bytes = await widget.videoFile.readAsBytes();
       final uploadRes = await http.put(
         Uri.parse(uploadUrl),
         headers: {'Content-Type': 'video/mp4'},
         body: bytes,
-      ).timeout(const Duration(minutes: 3));
+      ).timeout(const Duration(minutes: 5));
 
       if (uploadRes.statusCode == 200 || uploadRes.statusCode == 201) {
-        setState(() => _progress = 1.0);
+        setState(() {
+          _progress = 1.0;
+          _statusText = "Processing complete!";
+        });
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(backgroundColor: Colors.green, content: Text('Vybe Short Published Successfully! 🚀')),
+            const SnackBar(backgroundColor: Colors.green, content: Text('Short Published Successfully! 🚀')),
           );
           Navigator.popUntil(context, (route) => route.isFirst);
         }
       } else {
-        throw Exception("Cloudflare R2 Direct Upload Failed (${uploadRes.statusCode})");
+        throw Exception("Upload failed (${uploadRes.statusCode}). Please try again.");
       }
     } catch (e) {
       if (mounted) {
@@ -269,7 +291,12 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
             if (_isUploading) ...[
               LinearProgressIndicator(value: _progress, backgroundColor: Colors.grey[800], color: Colors.amber),
               const SizedBox(height: 12),
-              Center(child: Text('Uploading to R2 Pipeline... ${(_progress * 100).toInt()}%', style: const TextStyle(color: Colors.amber))),
+              Center(
+                child: Text(
+                  '$_statusText ${(_progress * 100).toInt()}%',
+                  style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
             const SizedBox(height: 20),
 
