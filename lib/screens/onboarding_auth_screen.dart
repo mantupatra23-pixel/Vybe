@@ -94,7 +94,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                     const SizedBox(height: 20),
                     Text(
                       item["title"]!,
-                      style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.black, height: 1.2),
+                      style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900, height: 1.2),
                     ),
                     const SizedBox(height: 14),
                     Text(
