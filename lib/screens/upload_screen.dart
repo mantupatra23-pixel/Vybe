@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../widgets/audio_picker_sheet.dart';
+import 'package:http/http.dart' as http;
 
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key});
@@ -14,8 +15,8 @@ class _UploadScreenState extends State<UploadScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   File? _selectedVideo;
-  String _selectedAudio = "Original Sound";
-  bool _isGeneratingAI = false;
+  bool _isUploading = false;
+  double _uploadProgress = 0.0;
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickVideo() async {
@@ -27,39 +28,100 @@ class _UploadScreenState extends State<UploadScreen> {
     }
   }
 
-  void _generateAIScript() async {
+  Future<void> _uploadDirectToR2() async {
+    if (_selectedVideo == null || _titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select video and title!')),
+      );
+      return;
+    }
+
     setState(() {
-      _isGeneratingAI = true;
+      _isUploading = true;
+      _uploadProgress = 0.1;
     });
 
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Step 1: Request Presigned URL from Backend
+      final presignedRes = await http.post(
+        Uri.parse('https://vybe-backend.onrender.com/api/upload/presigned-url'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'file_name': _selectedVideo!.path.split('/').last,
+          'file_type': 'video/mp4'
+        }),
+      );
 
-    setState(() {
-      _titleController.text = "How AI Automation Will Change 2026 ⚡";
-      _descController.text = "Automated fullstack workflows built with Flutter, FastAPI, Cloudflare R2, and Neon DB!";
-      _isGeneratingAI = false;
-    });
+      if (presignedRes.statusCode != 200) {
+        throw Exception('Failed to get R2 presigned URL');
+      }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        backgroundColor: Colors.amber,
-        content: Text('AI Script & Voiceover Generated via Groq! 🤖', style: TextStyle(color: Colors.black)),
-      ),
-    );
-  }
+      final data = json.decode(presignedRes.body);
+      final String uploadUrl = data['upload_url'];
+      final String publicUrl = data['public_url'];
 
-  void _openAudioPicker() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => AudioPickerSheet(
-        onAudioSelected: (audioName) {
-          setState(() {
-            _selectedAudio = audioName;
-          });
-        },
-      ),
-    );
+      setState(() {
+        _uploadProgress = 0.4;
+      });
+
+      // Step 2: Direct Binary Upload to Cloudflare R2
+      final videoBytes = await _selectedVideo!.readAsBytes();
+      final r2Res = await http.put(
+        Uri.parse(uploadUrl),
+        headers: {'Content-Type': 'video/mp4'},
+        body: videoBytes,
+      );
+
+      if (r2Res.statusCode != 200) {
+        throw Exception('R2 Direct Upload Failed');
+      }
+
+      setState(() {
+        _uploadProgress = 0.8;
+      });
+
+      // Step 3: Complete Metadata in Neon DB
+      await http.post(
+        Uri.parse('https://vybe-backend.onrender.com/api/upload/complete'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'title': _titleController.text,
+          'description': _descController.text,
+          'video_url': publicUrl,
+          'creator_handle': '@MantuPatra'
+        }),
+      );
+
+      setState(() {
+        _uploadProgress = 1.0;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.green,
+            content: Text('Uploaded Directly to Cloudflare R2 & Neon DB! ⚡'),
+          ),
+        );
+        setState(() {
+          _selectedVideo = null;
+          _titleController.clear();
+          _descController.clear();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(backgroundColor: Colors.red, content: Text('Upload Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -74,11 +136,9 @@ class _UploadScreenState extends State<UploadScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Video Picker Box
             GestureDetector(
-              onTap: _pickVideo,
+              onTap: _isUploading ? null : _pickVideo,
               child: Container(
                 height: 180,
                 width: double.infinity,
@@ -93,10 +153,7 @@ class _UploadScreenState extends State<UploadScreen> {
                         children: [
                           const Icon(Icons.check_circle, size: 45, color: Colors.greenAccent),
                           const SizedBox(height: 8),
-                          Text(
-                            'Selected: ${_selectedVideo!.path.split('/').last}',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                          ),
+                          Text(_selectedVideo!.path.split('/').last, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                         ],
                       )
                     : const Column(
@@ -104,108 +161,53 @@ class _UploadScreenState extends State<UploadScreen> {
                         children: [
                           Icon(Icons.cloud_upload_rounded, size: 45, color: Colors.amber),
                           SizedBox(height: 8),
-                          Text('Tap to select video from Gallery', style: TextStyle(color: Colors.white70)),
+                          Text('Select Video for R2 Pipeline', style: TextStyle(color: Colors.white70)),
                         ],
                       ),
               ),
             ),
-            const SizedBox(height: 15),
-
-            // AI Generator & Audio Buttons Row
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[900],
-                      foregroundColor: Colors.amber,
-                      side: const BorderSide(color: Colors.amber),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: _isGeneratingAI ? null : _generateAIScript,
-                    icon: const Icon(Icons.auto_awesome, size: 18),
-                    label: Text(_isGeneratingAI ? 'Generating...' : 'AI Auto-Script'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[900],
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: _openAudioPicker,
-                    icon: const Icon(Icons.music_note, size: 18, color: Colors.amber),
-                    label: Text(
-                      _selectedAudio.length > 12 ? '${_selectedAudio.substring(0, 12)}...' : _selectedAudio,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 15),
-
-            // Title Field
+            const SizedBox(height: 20),
             TextField(
               controller: _titleController,
+              enabled: !_isUploading,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Title',
                 labelStyle: const TextStyle(color: Colors.white70),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.white24),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.amber),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.white24), borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.amber), borderRadius: BorderRadius.circular(12)),
               ),
             ),
             const SizedBox(height: 15),
-
-            // Description Field
             TextField(
               controller: _descController,
-              maxLines: 3,
+              enabled: !_isUploading,
+              maxLines: 2,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Description',
                 labelStyle: const TextStyle(color: Colors.white70),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.white24),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.amber),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.white24), borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.amber), borderRadius: BorderRadius.circular(12)),
               ),
             ),
-            const SizedBox(height: 20),
-
-            // Upload Button
+            const SizedBox(height: 25),
+            if (_isUploading) ...[
+              LinearProgressIndicator(value: _uploadProgress, backgroundColor: Colors.grey[800], color: Colors.amber),
+              const SizedBox(height: 12),
+              Text('Uploading Direct to Cloudflare R2... ${(_uploadProgress * 100).toInt()}%', style: const TextStyle(color: Colors.amber)),
+            ],
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.amber,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Publishing Vybe with AI Audio & Meta... 🚀')),
-                  );
-                },
-                child: const Text(
-                  'Publish Vybe',
-                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
-                ),
+                onPressed: _isUploading ? null : _uploadDirectToR2,
+                child: const Text('Publish via R2 Pipeline', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
           ],
