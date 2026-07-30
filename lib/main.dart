@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'screens/onboarding_auth_screen.dart';
 import 'screens/upload_screen.dart';
 import 'screens/ranks_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/live_grid_screen.dart';
 import 'widgets/real_video_card.dart';
 import 'services/api_service.dart';
+import 'services/update_service.dart';
 
 void main() {
   runApp(const VybeApp());
@@ -21,7 +23,7 @@ class VybeApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
       ),
-      home: const MainNavigationScreen(),
+      home: const OnboardingAuthScreen(),
     );
   }
 }
@@ -35,6 +37,14 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService.checkForUpdates(context);
+    });
+  }
 
   final List<Widget> _screens = [
     const VerticalFeedScreen(),
