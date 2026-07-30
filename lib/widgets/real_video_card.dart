@@ -14,23 +14,33 @@ class RealVideoCard extends StatefulWidget {
 }
 
 class _RealVideoCardState extends State<RealVideoCard> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? _controller;
   bool _isInitialized = false;
   final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _initPlayer();
+  }
+
+  void _initPlayer() {
+    final videoUrl = widget.item["video_url"] ?? "";
+    if (videoUrl.isEmpty) return;
+
     _controller = VideoPlayerController.networkUrl(
-      Uri.parse(widget.item["video_url"]),
-      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+      Uri.parse(videoUrl),
+      videoPlayerOptions: VideoPlayerOptions(
+        mixWithOthers: true,
+        allowBackgroundPlayback: false,
+      ),
     )..initialize().then((_) {
         if (mounted) {
           setState(() {
             _isInitialized = true;
           });
-          _controller.setLooping(true);
-          _controller.play();
+          _controller?.setLooping(true);
+          _controller?.play();
         }
       }).catchError((e) {
         print("Video Init Error: $e");
@@ -39,7 +49,7 @@ class _RealVideoCardState extends State<RealVideoCard> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     _commentController.dispose();
     super.dispose();
   }
@@ -86,7 +96,7 @@ class _RealVideoCardState extends State<RealVideoCard> {
                       ListTile(
                         leading: CircleAvatar(backgroundColor: Colors.amber, child: Text('M', style: TextStyle(color: Colors.black))),
                         title: Text('@MantuPatra', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                        subtitle: Text('Super fast playback via Cloudflare R2! ⚡', style: TextStyle(color: Colors.white)),
+                        subtitle: Text('Fast playback active! ⚡', style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
@@ -138,9 +148,9 @@ class _RealVideoCardState extends State<RealVideoCard> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (_isInitialized) {
+        if (_isInitialized && _controller != null) {
           setState(() {
-            _controller.value.isPlaying ? _controller.pause() : _controller.play();
+            _controller!.value.isPlaying ? _controller!.pause() : _controller!.play();
           });
         }
       },
@@ -148,14 +158,14 @@ class _RealVideoCardState extends State<RealVideoCard> {
         children: [
           Container(
             color: Colors.black,
-            child: _isInitialized
+            child: _isInitialized && _controller != null
                 ? SizedBox.expand(
                     child: FittedBox(
                       fit: BoxFit.cover,
                       child: SizedBox(
-                        width: _controller.value.size.width,
-                        height: _controller.value.size.height,
-                        child: VideoPlayer(_controller),
+                        width: _controller!.value.size.width,
+                        height: _controller!.value.size.height,
+                        child: VideoPlayer(_controller!),
                       ),
                     ),
                   )
@@ -163,15 +173,15 @@ class _RealVideoCardState extends State<RealVideoCard> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(color: Colors.amber),
+                        CircularProgressIndicator(color: Colors.amber, strokeWidth: 3),
                         SizedBox(height: 12),
-                        Text('Streaming Reel...', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                        Text('Fast Streaming...', style: TextStyle(color: Colors.white54, fontSize: 12)),
                       ],
                     ),
                   ),
           ),
 
-          if (_isInitialized && !_controller.value.isPlaying)
+          if (_isInitialized && _controller != null && !_controller!.value.isPlaying)
             const Center(
               child: Icon(Icons.play_arrow_rounded, size: 80, color: Colors.white54),
             ),
@@ -184,12 +194,12 @@ class _RealVideoCardState extends State<RealVideoCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.item["creator"],
+                  widget.item["creator"] ?? "@MantuPatra",
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  widget.item["title"],
+                  widget.item["title"] ?? "",
                   style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
                 const SizedBox(height: 14),
@@ -211,8 +221,8 @@ class _RealVideoCardState extends State<RealVideoCard> {
             right: 16,
             bottom: 30,
             child: VideoActionBar(
-              initialLikes: widget.item["likes"],
-              commentsCount: widget.item["comments"],
+              initialLikes: widget.item["likes"] ?? 0,
+              commentsCount: widget.item["comments"] ?? 0,
               onCommentPressed: () => _showCommentsSheet(context),
             ),
           ),
