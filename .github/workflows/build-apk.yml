@@ -23,15 +23,16 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.6'
-          channel: 'stable'
+          architecture: x64
 
-      - name: Disable Flutter Auto-Update & Upgrade
-        run: |
-          flutter config --no-analytics
-          flutter pub get
+      - name: Check Flutter Version
+        run: flutter --version
+
+      - name: Get Dependencies
+        run: flutter pub get
 
       - name: Build Release APK
-        run: flutter build apk --release --no-tree-shake-icons
+        run: flutter build apk --release --no-tree-shake-icons --suppress-analytics
 
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/Vybe-APK.apk
