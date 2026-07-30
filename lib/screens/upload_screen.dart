@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key});
@@ -13,6 +14,7 @@ class _UploadScreenState extends State<UploadScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   File? _selectedVideo;
+  bool _isUploading = false;
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickVideo() async {
@@ -24,6 +26,86 @@ class _UploadScreenState extends State<UploadScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Video Selected Successfully! 🎥')),
       );
+    }
+  }
+
+  Future<void> _uploadVybe() async {
+    if (_selectedVideo == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a video first!')),
+      );
+      return;
+    }
+
+    if (_titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please add a title!')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      // Live Render API Endpoint
+      var uri = Uri.parse('https://vybe-backend.onrender.com/upload');
+      var request = http.MultipartRequest('POST', uri);
+
+      request.fields['title'] = _titleController.text;
+      request.fields['description'] = _descController.text;
+      request.fields['creator'] = '@Vybe Creator';
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'file',
+          _selectedVideo!.path,
+        ),
+      );
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              backgroundColor: Colors.green,
+              content: Text('Vybe Published to R2 & Neon DB! 🚀'),
+            ),
+          );
+          setState(() {
+            _selectedVideo = null;
+            _titleController.clear();
+            _descController.clear();
+          });
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.red,
+              content: Text('Upload failed with status: ${response.statusCode}'),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Upload Error: $e'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
     }
   }
 
@@ -43,7 +125,7 @@ class _UploadScreenState extends State<UploadScreen> {
           children: [
             // Video Picker Box
             GestureDetector(
-              onTap: _pickVideo,
+              onTap: _isUploading ? null : _pickVideo,
               child: Container(
                 height: 200,
                 width: double.infinity,
@@ -80,6 +162,7 @@ class _UploadScreenState extends State<UploadScreen> {
             // Title Field
             TextField(
               controller: _titleController,
+              enabled: !_isUploading,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Title',
@@ -99,6 +182,7 @@ class _UploadScreenState extends State<UploadScreen> {
             // Description Field
             TextField(
               controller: _descController,
+              enabled: !_isUploading,
               maxLines: 3,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
@@ -116,7 +200,7 @@ class _UploadScreenState extends State<UploadScreen> {
             ),
             const SizedBox(height: 25),
 
-            // Upload Button
+            // Upload Button with Progress Indicator
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -127,21 +211,27 @@ class _UploadScreenState extends State<UploadScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: () {
-                  if (_selectedVideo == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please select a video first!')),
-                    );
-                    return;
-                  }
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Publishing Vybe to Neon DB & Storage... 🚀')),
-                  );
-                },
-                child: const Text(
-                  'Publish Vybe',
-                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
-                ),
+                onPressed: _isUploading ? null : _uploadVybe,
+                child: _isUploading
+                    ? const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'Uploading Video...',
+                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      )
+                    : const Text(
+                        'Publish Vybe',
+                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
               ),
             ),
           ],
