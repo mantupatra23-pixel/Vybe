@@ -136,6 +136,7 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
     try {
       final fileName = widget.videoFile.path.split('/').last;
 
+      // 1. Get Presigned URL
       final presignedRes = await http.post(
         Uri.parse('$liveBackendUrl/api/v1/videos/generate-upload-url'),
         headers: {'Content-Type': 'application/json'},
@@ -154,21 +155,36 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
       }
 
       setState(() {
-        _progress = 0.50;
+        _progress = 0.40;
         _statusText = "Uploading video...";
       });
 
       final data = json.decode(presignedRes.body);
       final String uploadUrl = data['upload_url'] ?? data['cdn_url'];
 
-      final bytes = await widget.videoFile.readAsBytes();
-      final uploadRes = await http.put(
-        Uri.parse(uploadUrl),
-        headers: {'Content-Type': 'video/mp4'},
-        body: bytes,
-      ).timeout(const Duration(minutes: 5));
+      // 2. High Stability Streamed Request Upload to R2
+      final request = http.StreamedRequest('PUT', Uri.parse(uploadUrl));
+      final fileLength = await widget.videoFile.length();
 
-      if (uploadRes.statusCode == 200 || uploadRes.statusCode == 201) {
+      request.headers['Content-Type'] = 'video/mp4';
+      request.headers['Content-Length'] = fileLength.toString();
+
+      widget.videoFile.openRead().listen(
+        (chunk) {
+          request.sink.add(chunk);
+        },
+        onDone: () {
+          request.sink.close();
+        },
+        onError: (err) {
+          request.sink.close();
+        },
+        cancelOnError: true,
+      );
+
+      final response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
         setState(() {
           _progress = 1.0;
           _statusText = "Processing complete!";
@@ -181,7 +197,7 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
           Navigator.popUntil(context, (route) => route.isFirst);
         }
       } else {
-        throw Exception("Upload failed (${uploadRes.statusCode})");
+        throw Exception("Upload failed (${response.statusCode})");
       }
     } catch (e) {
       if (mounted) {
