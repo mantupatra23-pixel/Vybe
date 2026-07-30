@@ -1,48 +1,47 @@
-name: Build and Release Vybe APK
+name: Vybe Clean APK Build
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Set up Java 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Flutter
+      - name: Set up Flutter 3.19.6
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.6'
+          cache: false
 
-      - name: Disable Analytics
-        run: flutter config --no-analytics
-
-      - name: Get Dependencies
+      - name: Fetch Dependencies
         run: flutter pub get
 
-      - name: Build Release APK via Gradle
+      - name: Build APK via Native Gradle
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon -Dorg.gradle.debug=false
 
-      - name: Move APK
+      - name: Prepare Artifact
         run: |
           mkdir -p build/app/outputs/flutter-apk/
           cp android/app/build/outputs/apk/release/app-release.apk build/app/outputs/flutter-apk/Vybe-APK.apk
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload Vybe Release APK
+        uses: actions/upload-artifact@v4
         with:
-          name: Vybe-APK
+          name: Vybe-Release-APK
           path: build/app/outputs/flutter-apk/Vybe-APK.apk
