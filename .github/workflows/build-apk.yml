@@ -19,20 +19,16 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Flutter 3.19.6
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.6'
-          architecture: x64
-
-      - name: Check Flutter Version
-        run: flutter --version
+          channel: 'stable'
 
       - name: Get Dependencies
         run: flutter pub get
 
       - name: Build Release APK
-        run: flutter build apk --release --no-tree-shake-icons --suppress-analytics
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/Vybe-APK.apk
