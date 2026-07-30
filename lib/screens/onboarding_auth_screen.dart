@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/firebase_service.dart';
 import '../main.dart';
 
 class OnboardingAuthScreen extends StatefulWidget {
@@ -11,7 +12,7 @@ class OnboardingAuthScreen extends StatefulWidget {
 class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  bool _showLoginSheet = false;
+  bool _isLoading = false;
 
   final List<Map<String, String>> _onboardingData = [
     {
@@ -38,13 +39,32 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
     );
   }
 
+  Future<void> _handleGoogleAuth() async {
+    setState(() => _isLoading = true);
+    final userCred = await FirebaseService.signInWithGoogle();
+    setState(() => _isLoading = false);
+
+    if (userCred != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.green,
+          content: Text('Welcome back, ${userCred.user?.displayName ?? "Creator"}! 🎉'),
+        ),
+      );
+      _proceedToApp();
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google Sign-In Cancelled or Failed.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Dynamic PageView Content
           PageView.builder(
             controller: _pageController,
             onPageChanged: (index) {
@@ -87,7 +107,6 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
             },
           ),
 
-          // Top Skip Button
           Positioned(
             top: 50,
             right: 20,
@@ -97,14 +116,12 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
             ),
           ),
 
-          // Bottom Navigation Controls
           Positioned(
             bottom: 40,
             left: 24,
             right: 24,
             child: Column(
               children: [
-                // Page Indicator Dots
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
@@ -123,7 +140,6 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                 ),
                 const SizedBox(height: 30),
 
-                // Primary CTA Button
                 SizedBox(
                   width: double.infinity,
                   height: 52,
@@ -178,20 +194,18 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
               const Text('Sign in to publish videos, send tips & live stream', style: TextStyle(color: Colors.white54, fontSize: 12)),
               const SizedBox(height: 25),
 
-              // Google Auth Button
               _buildSocialAuthButton(
                 icon: Icons.g_mobiledata_rounded,
-                label: 'Continue with Google',
+                label: _isLoading ? 'Signing in...' : 'Continue with Google',
                 bgColor: Colors.white,
                 textColor: Colors.black,
-                onTap: () {
+                onTap: _isLoading ? () {} : () {
                   Navigator.pop(context);
-                  _proceedToApp();
+                  _handleGoogleAuth();
                 },
               ),
               const SizedBox(height: 12),
 
-              // Facebook Auth Button
               _buildSocialAuthButton(
                 icon: Icons.facebook,
                 label: 'Continue with Facebook',
@@ -201,34 +215,6 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                   Navigator.pop(context);
                   _proceedToApp();
                 },
-              ),
-              const SizedBox(height: 20),
-
-              const Row(
-                children: [
-                  Expanded(child: Divider(color: Colors.white12)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text('OR', style: TextStyle(color: Colors.white38, fontSize: 11)),
-                  ),
-                  Expanded(child: Divider(color: Colors.white12)),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Phone Number Minimal Trigger
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  side: const BorderSide(color: Colors.white24),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                  _proceedToApp();
-                },
-                icon: const Icon(Icons.phone_android, color: Colors.amber),
-                label: const Text('Use Phone Number & OTP', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 20),
             ],

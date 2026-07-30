@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 
 class UpdateService {
   static const String currentAppVersion = "1.0.1";
@@ -92,13 +91,11 @@ class UpdateService {
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              onPressed: () async {
-                final Uri url = Uri.parse(downloadUrl);
-                try {
-                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                } catch (e) {
-                  print("Launch Error: $e");
-                }
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Opening update link: $downloadUrl')),
+                );
               },
               child: const Text('Update Now', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
