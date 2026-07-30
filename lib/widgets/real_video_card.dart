@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import '../services/api_service.dart';
 import 'video_action_bar.dart';
 import 'tip_modal.dart';
 
@@ -15,24 +16,31 @@ class RealVideoCard extends StatefulWidget {
 class _RealVideoCardState extends State<RealVideoCard> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _controller = VideoPlayerController.networkUrl(
       Uri.parse(widget.item["video_url"]),
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
     )..initialize().then((_) {
-        setState(() {
-          _isInitialized = true;
-        });
-        _controller.setLooping(true);
-        _controller.play();
+        if (mounted) {
+          setState(() {
+            _isInitialized = true;
+          });
+          _controller.setLooping(true);
+          _controller.play();
+        }
+      }).catchError((e) {
+        print("Video Init Error: $e");
       });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _commentController.dispose();
     super.dispose();
   }
 
@@ -51,50 +59,75 @@ class _RealVideoCardState extends State<RealVideoCard> {
   void _showCommentsSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.grey[900],
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          height: 400,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Center(
-                child: Text(
-                  'Comments',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+        return Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            height: 420,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Center(
+                  child: Text(
+                    'Real-Time Comments',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ),
-              ),
-              const Divider(color: Colors.white24),
-              Expanded(
-                child: ListView(
-                  children: const [
-                    ListTile(
-                      leading: CircleAvatar(backgroundColor: Colors.amber, child: Text('N')),
-                      title: Text('Neon DB Sync', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                      subtitle: Text('Directly connected to Neon PostgreSQL! ⚡', style: TextStyle(color: Colors.white)),
+                const Divider(color: Colors.white24, height: 20),
+                Expanded(
+                  child: ListView(
+                    children: const [
+                      ListTile(
+                        leading: CircleAvatar(backgroundColor: Colors.amber, child: Text('M', style: TextStyle(color: Colors.black))),
+                        title: Text('@MantuPatra', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                        subtitle: Text('Super fast playback via Cloudflare R2! ⚡', style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _commentController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Add a comment...',
+                          hintStyle: const TextStyle(color: Colors.white38),
+                          filled: true,
+                          fillColor: Colors.black,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.send_rounded, color: Colors.amber),
+                      onPressed: () async {
+                        if (_commentController.text.isNotEmpty) {
+                          final text = _commentController.text;
+                          _commentController.clear();
+                          Navigator.pop(context);
+                          await ApiService.addComment(widget.item["id"] ?? 1, text);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Comment Published! 💬')),
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),
-              ),
-              TextField(
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Add a comment...',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  suffixIcon: const Icon(Icons.send, color: Colors.amber),
-                  filled: true,
-                  fillColor: Colors.black,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -105,13 +138,14 @@ class _RealVideoCardState extends State<RealVideoCard> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _controller.value.isPlaying ? _controller.pause() : _controller.play();
-        });
+        if (_isInitialized) {
+          setState(() {
+            _controller.value.isPlaying ? _controller.pause() : _controller.play();
+          });
+        }
       },
       child: Stack(
         children: [
-          // Video Surface
           Container(
             color: Colors.black,
             child: _isInitialized
@@ -126,20 +160,25 @@ class _RealVideoCardState extends State<RealVideoCard> {
                     ),
                   )
                 : const Center(
-                    child: CircularProgressIndicator(color: Colors.amber),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(color: Colors.amber),
+                        SizedBox(height: 12),
+                        Text('Streaming Reel...', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                      ],
+                    ),
                   ),
           ),
 
-          // Play Icon Overlay when Paused
           if (_isInitialized && !_controller.value.isPlaying)
             const Center(
-              child: Icon(Icons.play_arrow, size: 80, color: Colors.white54),
+              child: Icon(Icons.play_arrow_rounded, size: 80, color: Colors.white54),
             ),
 
-          // Bottom Info Overlay
           Positioned(
             left: 16,
-            bottom: 20,
+            bottom: 25,
             right: 80,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,7 +207,6 @@ class _RealVideoCardState extends State<RealVideoCard> {
             ),
           ),
 
-          // Right Action Bar
           Positioned(
             right: 16,
             bottom: 30,

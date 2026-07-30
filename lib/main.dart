@@ -4,6 +4,7 @@ import 'screens/ranks_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/live_grid_screen.dart';
 import 'widgets/real_video_card.dart';
+import 'services/api_service.dart';
 
 void main() {
   runApp(const VybeApp());
@@ -85,34 +86,43 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 }
 
-class VerticalFeedScreen extends StatelessWidget {
+class VerticalFeedScreen extends StatefulWidget {
   const VerticalFeedScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> feedItems = [
-      {
-        "creator": "@Vybe Creator",
-        "title": "Autonomous AI Video Generator Pipeline ⚡",
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-leaves-low-angle-shot-40033-large.mp4",
-        "likes": 248,
-        "comments": 34
-      },
-      {
-        "creator": "@AI Academy",
-        "title": "What is Artificial Intelligence in 30 Seconds?",
-        "video_url": "https://assets.mixkit.co/videos/preview/mixkit-vertical-shot-of-a-neon-lit-street-at-night-41544-large.mp4",
-        "likes": 512,
-        "comments": 89
-      }
-    ];
+  State<VerticalFeedScreen> createState() => _VerticalFeedScreenState();
+}
 
-    return PageView.builder(
-      scrollDirection: Axis.vertical,
-      itemCount: feedItems.length,
-      itemBuilder: (context, index) {
-        final item = feedItems[index];
-        return RealVideoCard(item: item);
+class _VerticalFeedScreenState extends State<VerticalFeedScreen> {
+  late Future<List<Map<String, dynamic>>> _feedFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _feedFuture = ApiService.fetchSmartFeed();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _feedFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.amber),
+          );
+        }
+
+        final feedItems = snapshot.data ?? [];
+
+        return PageView.builder(
+          scrollDirection: Axis.vertical,
+          itemCount: feedItems.length,
+          itemBuilder: (context, index) {
+            final item = feedItems[index];
+            return RealVideoCard(item: item);
+          },
+        );
       },
     );
   }
