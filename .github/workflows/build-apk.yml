@@ -24,6 +24,7 @@ jobs:
         with:
           flutter-version: '3.19.6'
           channel: 'stable'
+          cache: false
 
       - name: Get Dependencies
         run: flutter pub get
