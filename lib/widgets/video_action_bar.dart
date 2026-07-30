@@ -18,7 +18,6 @@ class VideoActionBar extends StatefulWidget {
 
 class _VideoActionBarState extends State<VideoActionBar> {
   bool isLiked = false;
-  bool isBookmarked = false;
   late int likeCount;
 
   @override
@@ -44,7 +43,7 @@ class _VideoActionBarState extends State<VideoActionBar> {
             });
           },
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
 
         // Comment Button
         _buildActionButton(
@@ -53,20 +52,20 @@ class _VideoActionBarState extends State<VideoActionBar> {
           label: "${widget.commentsCount}",
           onTap: widget.onCommentPressed,
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
 
-        // Bookmark Button
+        // Duet / Remix Button
         _buildActionButton(
-          icon: isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-          color: isBookmarked ? Colors.amber : Colors.white,
-          label: "Save",
+          icon: Icons.splitscreen_rounded,
+          color: Colors.amber,
+          label: "Duet",
           onTap: () {
-            setState(() {
-              isBookmarked = !isBookmarked;
-            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Opening AI Duet Studio... 🎬')),
+            );
           },
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
 
         // Share Button
         _buildActionButton(
@@ -75,7 +74,7 @@ class _VideoActionBarState extends State<VideoActionBar> {
           label: "Share",
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Video link copied!')),
+              const SnackBar(content: Text('Reel Link Copied!')),
             );
           },
         ),
@@ -93,13 +92,13 @@ class _VideoActionBarState extends State<VideoActionBar> {
       onTap: onTap,
       child: Column(
         children: [
-          Icon(icon, size: 32, color: color),
+          Icon(icon, size: 30, color: color),
           const SizedBox(height: 4),
           Text(
             label,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
           ),

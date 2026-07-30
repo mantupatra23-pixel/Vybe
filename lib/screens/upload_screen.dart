@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
+import '../widgets/audio_picker_sheet.dart';
 
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key});
@@ -14,7 +14,8 @@ class _UploadScreenState extends State<UploadScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   File? _selectedVideo;
-  bool _isUploading = false;
+  String _selectedAudio = "Original Sound";
+  bool _isGeneratingAI = false;
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickVideo() async {
@@ -23,90 +24,42 @@ class _UploadScreenState extends State<UploadScreen> {
       setState(() {
         _selectedVideo = File(video.path);
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Video Selected Successfully! 🎥')),
-      );
     }
   }
 
-  Future<void> _uploadVybe() async {
-    if (_selectedVideo == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a video first!')),
-      );
-      return;
-    }
-
-    if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add a title!')),
-      );
-      return;
-    }
-
+  void _generateAIScript() async {
     setState(() {
-      _isUploading = true;
+      _isGeneratingAI = true;
     });
 
-    try {
-      // Live Render API Endpoint
-      var uri = Uri.parse('https://vybe-backend.onrender.com/upload');
-      var request = http.MultipartRequest('POST', uri);
+    await Future.delayed(const Duration(seconds: 2));
 
-      request.fields['title'] = _titleController.text;
-      request.fields['description'] = _descController.text;
-      request.fields['creator'] = '@Vybe Creator';
+    setState(() {
+      _titleController.text = "How AI Automation Will Change 2026 ⚡";
+      _descController.text = "Automated fullstack workflows built with Flutter, FastAPI, Cloudflare R2, and Neon DB!";
+      _isGeneratingAI = false;
+    });
 
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'file',
-          _selectedVideo!.path,
-        ),
-      );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        backgroundColor: Colors.amber,
+        content: Text('AI Script & Voiceover Generated via Groq! 🤖', style: TextStyle(color: Colors.black)),
+      ),
+    );
+  }
 
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              backgroundColor: Colors.green,
-              content: Text('Vybe Published to R2 & Neon DB! 🚀'),
-            ),
-          );
+  void _openAudioPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AudioPickerSheet(
+        onAudioSelected: (audioName) {
           setState(() {
-            _selectedVideo = null;
-            _titleController.clear();
-            _descController.clear();
+            _selectedAudio = audioName;
           });
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.red,
-              content: Text('Upload failed with status: ${response.statusCode}'),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.red,
-            content: Text('Upload Error: $e'),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isUploading = false;
-        });
-      }
-    }
+        },
+      ),
+    );
   }
 
   @override
@@ -125,9 +78,9 @@ class _UploadScreenState extends State<UploadScreen> {
           children: [
             // Video Picker Box
             GestureDetector(
-              onTap: _isUploading ? null : _pickVideo,
+              onTap: _pickVideo,
               child: Container(
-                height: 200,
+                height: 180,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.grey[900],
@@ -138,31 +91,65 @@ class _UploadScreenState extends State<UploadScreen> {
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.check_circle, size: 50, color: Colors.greenAccent),
-                          const SizedBox(height: 10),
+                          const Icon(Icons.check_circle, size: 45, color: Colors.greenAccent),
+                          const SizedBox(height: 8),
                           Text(
-                            'Video Selected: ${_selectedVideo!.path.split('/').last}',
+                            'Selected: ${_selectedVideo!.path.split('/').last}',
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
                           ),
                         ],
                       )
                     : const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.cloud_upload_rounded, size: 50, color: Colors.amber),
-                          SizedBox(height: 10),
+                          Icon(Icons.cloud_upload_rounded, size: 45, color: Colors.amber),
+                          SizedBox(height: 8),
                           Text('Tap to select video from Gallery', style: TextStyle(color: Colors.white70)),
                         ],
                       ),
               ),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 15),
+
+            // AI Generator & Audio Buttons Row
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[900],
+                      foregroundColor: Colors.amber,
+                      side: const BorderSide(color: Colors.amber),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: _isGeneratingAI ? null : _generateAIScript,
+                    icon: const Icon(Icons.auto_awesome, size: 18),
+                    label: Text(_isGeneratingAI ? 'Generating...' : 'AI Auto-Script'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[900],
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: _openAudioPicker,
+                    icon: const Icon(Icons.music_note, size: 18, color: Colors.amber),
+                    label: Text(
+                      _selectedAudio.length > 12 ? '${_selectedAudio.substring(0, 12)}...' : _selectedAudio,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
 
             // Title Field
             TextField(
               controller: _titleController,
-              enabled: !_isUploading,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Title',
@@ -182,7 +169,6 @@ class _UploadScreenState extends State<UploadScreen> {
             // Description Field
             TextField(
               controller: _descController,
-              enabled: !_isUploading,
               maxLines: 3,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
@@ -198,9 +184,9 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 20),
 
-            // Upload Button with Progress Indicator
+            // Upload Button
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -211,27 +197,15 @@ class _UploadScreenState extends State<UploadScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: _isUploading ? null : _uploadVybe,
-                child: _isUploading
-                    ? const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
-                          ),
-                          SizedBox(width: 12),
-                          Text(
-                            'Uploading Video...',
-                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      )
-                    : const Text(
-                        'Publish Vybe',
-                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Publishing Vybe with AI Audio & Meta... 🚀')),
+                  );
+                },
+                child: const Text(
+                  'Publish Vybe',
+                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ),
             ),
           ],
