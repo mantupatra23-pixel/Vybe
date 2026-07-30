@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 class UpdateService {
   static const String currentAppVersion = "1.0.1";
   static const int currentBuildNumber = 1;
-  static const String updateApiUrl = "https://vybe-backend-fbsl.onrender.com/api/v1/app/latest-version";
+  static const String updateApiUrl = "https://vybe-backend-fbsi.onrender.com/api/v1/app/latest-version";
 
   static Future<void> checkForUpdates(BuildContext context) async {
     await Future.delayed(const Duration(seconds: 2));

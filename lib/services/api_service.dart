@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "https://vybe-backend-fbsl.onrender.com";
+  static const String baseUrl = "https://vybe-backend-fbsi.onrender.com";
 
   static Future<List<Map<String, dynamic>>> fetchSmartFeed() async {
     try {

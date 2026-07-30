@@ -20,7 +20,7 @@ class _UploadDetailsScreenState extends State<UploadDetailsScreen> {
   double _progress = 0.0;
   String _statusText = "";
 
-  static const String liveBackendUrl = "https://vybe-backend-fbsl.onrender.com";
+  static const String liveBackendUrl = "https://vybe-backend-fbsi.onrender.com";
 
   @override
   void initState() {
