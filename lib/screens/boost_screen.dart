@@ -38,7 +38,7 @@ class _BoostScreenState extends State<BoostScreen> {
                 children: [
                   const Text('Estimated Projected Reach', style: TextStyle(color: Colors.white54, fontSize: 13)),
                   const SizedBox(height: 8),
-                  Text('$estimatedViews Views', style: const TextStyle(color: Colors.amber, fontSize: 32, fontWeight: FontWeight.black)),
+                  Text('$estimatedViews Views', style: const TextStyle(color: Colors.amber, fontSize: 32, fontWeight: FontWeight.w900)),
                   const SizedBox(height: 4),
                   Text('Budget: \$${_budget.toInt()}', style: const TextStyle(color: Colors.white70, fontSize: 14)),
                 ],

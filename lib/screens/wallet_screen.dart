@@ -76,14 +76,14 @@ class _WalletScreenState extends State<WalletScreen> {
                       const Text('Total Tip Earnings 💰', style: TextStyle(color: Colors.white54, fontSize: 13)),
                       const SizedBox(height: 10),
                       Text(
-                        '\$_totalEarnings',
-                        style: const TextStyle(color: Colors.amber, fontSize: 34, fontWeight: FontWeight.black),
+                        '\$$_totalEarnings',
+                        style: const TextStyle(color: Colors.amber, fontSize: 34, fontWeight: FontWeight.w900),
                       ),
                       const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Linked UPI: \$_upiId', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                          Text('Linked UPI: $_upiId', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.amber,
@@ -128,7 +128,7 @@ class _WalletScreenState extends State<WalletScreen> {
                       )
                     : ListView.builder(
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics,
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: _tipHistory.length,
                         itemBuilder: (context, index) {
                           final tip = _tipHistory[index];
