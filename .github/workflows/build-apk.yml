@@ -1,4 +1,4 @@
-name: Vybe Final Build Engine
+name: Vybe Production APK Build
 
 on:
   push:
@@ -28,16 +28,13 @@ jobs:
       - name: Fetch Dependencies
         run: flutter pub get
 
-      - name: Build APK via Direct Native Gradle
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+      - name: Build Release APK
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Prepare Artifact
         run: |
           mkdir -p build/app/outputs/flutter-apk/
-          cp android/app/build/outputs/apk/release/app-release.apk build/app/outputs/flutter-apk/Vybe-APK.apk
+          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/Vybe-APK.apk
 
       - name: Upload Vybe Release APK
         uses: actions/upload-artifact@v4
