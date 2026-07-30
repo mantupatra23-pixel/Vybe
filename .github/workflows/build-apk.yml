@@ -33,7 +33,7 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon -Dorg.gradle.debug=false
+          ./gradlew assembleRelease --no-daemon
 
       - name: Prepare Artifact
         run: |
