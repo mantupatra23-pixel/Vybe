@@ -9,24 +9,8 @@ class OnboardingAuthScreen extends StatefulWidget {
   State<OnboardingAuthScreen> createState() => _OnboardingAuthScreenState();
 }
 
-class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> with SingleTickerProviderStateMixin {
+class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
   bool _isLoading = false;
-  late AnimationController _pulseController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
 
   void _proceedToApp() {
     Navigator.pushReplacement(
@@ -44,7 +28,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> with Single
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.amber,
-          content: Text('Welcome, ${userData["name"]}! 🙏', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          content: Text('Namaste ${userData["name"]}! Welcome to Vybe 🙏', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         ),
       );
       _proceedToApp();
@@ -53,222 +37,241 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> with Single
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          // Background Glow Orbs
-          Positioned(
-            top: -50,
-            left: screenSize.width * 0.1,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [Colors.amber.withOpacity(0.3), Colors.transparent],
-                ),
-              ),
-            ),
-          ),
-
-          SafeArea(
-            child: Padding(
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Top Bar Branding
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Top Row Header
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.amber.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.amber.withOpacity(0.5)),
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Row(
-                          children: [
-                            Text('🔥 ', style: TextStyle(fontSize: 12)),
-                            Text(
-                              '1000+ Creators Live',
-                              style: TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
+                        child: const Icon(Icons.bolt, color: Colors.black, size: 20),
                       ),
-                      TextButton(
-                        onPressed: _proceedToApp,
-                        child: const Text('Explore Feed ➔', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Center Card: AI Girl Creator Hero Section
-                  Expanded(
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.amber.withOpacity(0.18), const Color(0xFF141414)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: Colors.amber.withOpacity(0.35), width: 1.2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.amber.withOpacity(0.08),
-                            blurRadius: 20,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
+                      const SizedBox(width: 10),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Animated Pulse Ring
-                          ScaleTransition(
-                            scale: Tween<double>(begin: 0.95, end: 1.08).animate(_pulseController),
-                            child: Container(
-                              width: 130,
-                              height: 130,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.amber.withOpacity(0.4), width: 1.5),
-                              ),
-                            ),
-                          ),
-
-                          // Creator Avatar & Welcome Tag
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 105,
-                                height: 105,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: const LinearGradient(
-                                    colors: [Colors.amber, Colors.orangeAccent],
-                                  ),
-                                  border: Border.all(color: Colors.white, width: 3),
-                                  boxShadow: [
-                                    BoxShadow(color: Colors.amber.withOpacity(0.4), blurRadius: 15),
-                                  ],
-                                ),
-                                child: const Center(
-                                  child: Text('🥻', style: TextStyle(fontSize: 50)),
-                                ),
-                              ),
-                              const SizedBox(height: 14),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.85),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: Colors.amber),
-                                ),
-                                child: const Text(
-                                  'Namaste! 🙏 Welcome to Vybe',
-                                  style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 14),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                '@Aria_AI • Digital Influencer',
-                                style: TextStyle(color: Colors.white54, fontSize: 12),
-                              ),
-                            ],
-                          ),
-
-                          // Instant UPI Badge
-                          Positioned(
-                            bottom: 16,
-                            right: 16,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: Colors.greenAccent.withOpacity(0.18),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.greenAccent.withOpacity(0.6)),
-                              ),
-                              child: const Row(
-                                children: [
-                                  Icon(Icons.bolt, color: Colors.greenAccent, size: 14),
-                                  SizedBox(width: 4),
-                                  Text('Instant UPI Tips', style: TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                            ),
-                          ),
+                          Text('Vybe.ai', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text('AI Reels & Live Studio', style: TextStyle(color: Colors.white54, fontSize: 10)),
                         ],
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Features Grid Stats
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildMetricItem("1.2M+", "AI Reels"),
-                      _buildMetricItem("4.9 ★", "Top Rated"),
-                      _buildMetricItem("⚡ Instant", "UPI Payouts"),
                     ],
                   ),
-                  const SizedBox(height: 20),
-
-                  // Main Headline
-                  const Text(
-                    "Next-Gen AI Reels & Live Studio",
-                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, height: 1.2),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    "Generate autonomous videos, receive direct creator tips & join 1000+ interactive live streams.",
-                    style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.4),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Call To Action Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: Colors.black,
-                        elevation: 8,
-                        shadowColor: Colors.amber.withOpacity(0.4),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-                      ),
-                      onPressed: () => _showAuthBottomSheet(context),
-                      child: const Text('Get Started & Sign In 🙏', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    ),
+                  TextButton(
+                    onPressed: _proceedToApp,
+                    child: const Text('Explore Feed ➔', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+
+            // Hero Main Section (Inspired by Image Layout)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 10),
+                      // Catchy Banner Headline
+                      RichText(
+                        text: const TextSpan(
+                          children: [
+                            TextSpan(text: "Turn AI Creations\n", style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w900, height: 1.1)),
+                            TextSpan(text: "Into Instant Earnings ", style: TextStyle(color: Colors.amber, fontSize: 30, fontWeight: FontWeight.w900, height: 1.1)),
+                            TextSpan(text: "⚡", style: TextStyle(fontSize: 26)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        "Generate autonomous short reels, host live streams & get direct UPI tips from 1000+ active creators.",
+                        style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Interactive Split Card: Left Model + Right Phone Preview
+                      Container(
+                        width: double.infinity,
+                        height: 250,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.amber.withOpacity(0.15), const Color(0xFF181818)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            // Left Section: Namaste AI Girl Model
+                            Expanded(
+                              flex: 5,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 85,
+                                    height: 85,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: const LinearGradient(colors: [Colors.amber, Colors.orangeAccent]),
+                                      border: Border.all(color: Colors.white, width: 2.5),
+                                      boxShadow: [
+                                        BoxShadow(color: Colors.amber.withOpacity(0.4), blurRadius: 15),
+                                      ],
+                                    ),
+                                    child: const Center(child: Text('🥻', style: TextStyle(fontSize: 42))),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(15),
+                                      border: Border.all(color: Colors.amber.withOpacity(0.8)),
+                                    ),
+                                    child: const Text('Namaste! 🙏', style: TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold)),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text('@Aria_AI • Digital Model', style: TextStyle(color: Colors.white54, fontSize: 9)),
+                                ],
+                              ),
+                            ),
+
+                            // Right Section: Mini Phone Preview Mockup
+                            Expanded(
+                              flex: 5,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.white24, width: 2),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.amber.withOpacity(0.1), blurRadius: 10),
+                                  ],
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('Vybe Live', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(6)),
+                                            child: const Text('LIVE', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                                          )
+                                        ],
+                                      ),
+                                      const Icon(Icons.play_circle_fill_rounded, color: Colors.amber, size: 36),
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.amber,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: const Center(
+                                          child: Text('Send ₹9 Tip ⚡', style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 4 Bottom Feature Pill Badges (Exact match to sample image)
+                      Row(
+                        children: [
+                          Expanded(child: _buildBadgeItem(Icons.monetization_on_outlined, "Earn in Minutes")),
+                          const SizedBox(width: 8),
+                          Expanded(child: _buildBadgeItem(Icons.groups_outlined, "Real Creators")),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(child: _buildBadgeItem(Icons.verified_user_outlined, "Safe & Secure")),
+                          const SizedBox(width: 8),
+                          Expanded(child: _buildBadgeItem(Icons.bolt_outlined, "Instant UPI")),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom CTA Sign In Button
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.black,
+                    elevation: 8,
+                    shadowColor: Colors.amber.withOpacity(0.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+                  ),
+                  onPressed: () => _showAuthBottomSheet(context),
+                  child: const Text('Start Earning & Create Now 🚀', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildMetricItem(String value, String label) {
-    return Column(
-      children: [
-        Text(value, style: const TextStyle(color: Colors.amber, fontSize: 15, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 2),
-        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 11)),
-      ],
+  Widget _buildBadgeItem(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF141414),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.amber, size: 16),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              style: const TextStyle(color: Colors.white80, fontSize: 11, fontWeight: FontWeight.w600),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
