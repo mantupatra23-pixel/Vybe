@@ -29,7 +29,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.amber,
-          content: Text('Namaste ${userData["name"]}! Welcome to Vybe 🙏', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          content: Text('Welcome, ${userData["name"]}! 🚀', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         ),
       );
       _proceedToApp();
@@ -56,7 +56,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top Bar Branding & Live Visitors Badge
+            // Top Bar Branding: Strictly "Vybe" Only
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
               child: Row(
@@ -79,7 +79,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                       const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Vybe.ai', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text('Vybe', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                           Text('AI Reels & Live Studio', style: TextStyle(color: Colors.white54, fontSize: 10)),
                         ],
                       ),
@@ -139,7 +139,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Interactive Namaste Model & Phone Mockup Card
+                      // Interactive Girl Model & Phone Mockup Card
                       Container(
                         width: double.infinity,
                         height: 240,
@@ -155,7 +155,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                         ),
                         child: Row(
                           children: [
-                            // Left Side: Namaste Aesthetic Creator Badge
+                            // Left Side: AI Girl Creator Hero Card
                             Expanded(
                               flex: 5,
                               child: Column(
@@ -177,21 +177,21 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                                       ],
                                     ),
                                     child: const Center(
-                                      child: Text('🙏', style: TextStyle(fontSize: 44)),
+                                      child: Icon(Icons.face_3_rounded, color: Colors.black87, size: 52),
                                     ),
                                   ),
                                   const SizedBox(height: 10),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: Colors.black,
                                       borderRadius: BorderRadius.circular(15),
                                       border: Border.all(color: Colors.amber.withOpacity(0.8)),
                                     ),
-                                    child: const Text('Namaste! 🙏', style: TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold)),
+                                    child: const Text('AI Creator ✨', style: TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold)),
                                   ),
                                   const SizedBox(height: 4),
-                                  const Text('@Aria_AI • Digital Influencer', style: TextStyle(color: Colors.white54, fontSize: 9)),
+                                  const Text('@Aria_AI • Digital Model', style: TextStyle(color: Colors.white54, fontSize: 9)),
                                 ],
                               ),
                             ),
