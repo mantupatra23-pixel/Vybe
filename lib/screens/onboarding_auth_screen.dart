@@ -10,33 +10,7 @@ class OnboardingAuthScreen extends StatefulWidget {
 }
 
 class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
   bool _isLoading = false;
-
-  final List<Map<String, dynamic>> _onboardingData = [
-    {
-      "title": "Autonomous AI\nVideo Generation",
-      "subtitle": "Create, render, and stream short reels in seconds with Groq AI Studio.",
-      "badge": "AI POWERED ⚡",
-      "icon": Icons.auto_awesome_rounded,
-      "colors": [const Color(0xFFFF9900), const Color(0xFFFF0055)]
-    },
-    {
-      "title": "Earn Direct Tips &\nInstant Payouts",
-      "subtitle": "Monetize content directly via instant UPI & Cloudflare pipeline.",
-      "badge": "MONETIZE 💰",
-      "icon": Icons.account_balance_wallet_rounded,
-      "colors": [const Color(0xFF00F2FE), const Color(0xFF4FACFE)]
-    },
-    {
-      "title": "Interactive Live\nGrid & Gaming",
-      "subtitle": "Engage in real-time streams with dynamic tipping overlays and ranks.",
-      "badge": "LIVE COMMUNITY 📡",
-      "icon": Icons.cell_tower_rounded,
-      "colors": [const Color(0xFF11998E), const Color(0xFF38EF7D)]
-    },
-  ];
 
   void _proceedToApp() {
     Navigator.pushReplacement(
@@ -54,7 +28,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.amber,
-          content: Text('Logged in successfully as ${userData["name"]}! 🚀', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          content: Text('Welcome, ${userData["name"]}! 🙏', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         ),
       );
       _proceedToApp();
@@ -67,155 +41,178 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Dynamic Glowing Gradient Orbs
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 500),
-            top: _currentPage == 0 ? -50 : -100,
-            left: _currentPage == 1 ? -50 : 100,
+          // Background Golden Glow Effect
+          Positioned(
+            top: -60,
+            left: MediaQuery.of(context).size.width * 0.15,
             child: Container(
-              width: 320,
-              height: 320,
+              width: 280,
+              height: 280,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [
-                    _onboardingData[_currentPage]["colors"][0].withOpacity(0.4),
-                    Colors.transparent
-                  ],
+                  colors: [Colors.amber.withOpacity(0.35), Colors.transparent],
                 ),
               ),
             ),
           ),
 
-          PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() => _currentPage = index);
-            },
-            itemCount: _onboardingData.length,
-            itemBuilder: (context, index) {
-              final item = _onboardingData[index];
-              final List<Color> colors = item["colors"];
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top Row: 1000+ Creators Active Badge & Explore Skip
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.amber.withOpacity(0.6)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Text('🔥 ', style: TextStyle(fontSize: 12)),
+                            Text(
+                              '1000+ Creators Live',
+                              style: TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _proceedToApp,
+                        child: const Text('Explore Feed ➔', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Glassmorphic Hero Preview Card
-                    Container(
+                  // Center AI Girl Influencer Card (Namaste Greeting)
+                  Expanded(
+                    child: Container(
                       width: double.infinity,
-                      height: 220,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [colors[0].withOpacity(0.25), colors[1].withOpacity(0.1)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                          colors: [Colors.amber.withOpacity(0.2), const Color(0xFF181818)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
                         ),
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: colors[0].withOpacity(0.5), width: 1.5),
+                        borderRadius: BorderRadius.circular(32),
+                        border: Border.all(color: Colors.amber.withOpacity(0.4), width: 1.5),
                         boxShadow: [
-                          BoxShadow(color: colors[0].withOpacity(0.15), blurRadius: 30, spreadRadius: 2),
+                          BoxShadow(
+                            color: Colors.amber.withOpacity(0.1),
+                            blurRadius: 25,
+                            spreadRadius: 2,
+                          ),
                         ],
                       ),
-                      child: Center(
-                        child: Icon(item["icon"], size: 80, color: colors[0]),
-                      ),
-                    ),
-                    const SizedBox(height: 35),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Influencer Avatar Layout
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 110,
+                                height: 110,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    colors: [Colors.amber, Colors.orangeAccent],
+                                  ),
+                                  border: Border.all(color: Colors.white, width: 3),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.amber.withOpacity(0.5), blurRadius: 20),
+                                  ],
+                                ),
+                                child: const Center(
+                                  child: Text('🥻', style: TextStyle(fontSize: 55)),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.8),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.amber),
+                                ),
+                                child: const Text(
+                                  'Namaste! 🙏 Welcome to Vybe',
+                                  style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 15),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                '@Aria_AI • Digital Influencer',
+                                style: TextStyle(color: Colors.white60, fontSize: 12),
+                              ),
+                            ],
+                          ),
 
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: colors[0].withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: colors[0]),
-                      ),
-                      child: Text(
-                        item["badge"]!,
-                        style: TextStyle(color: colors[0], fontSize: 11, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      item["title"]!,
-                      style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900, height: 1.2),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      item["subtitle"]!,
-                      style: const TextStyle(color: Colors.white60, fontSize: 14, height: 1.4),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-
-          // Top Right Skip Button
-          Positioned(
-            top: 50,
-            right: 20,
-            child: TextButton(
-              onPressed: _proceedToApp,
-              child: const Text('Explore Feed ➔', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 15)),
-            ),
-          ),
-
-          // Bottom Controls
-          Positioned(
-            bottom: 40,
-            left: 24,
-            right: 24,
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    _onboardingData.length,
-                    (index) => AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: _currentPage == index ? 28 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: _currentPage == index ? Colors.amber : Colors.white24,
-                        borderRadius: BorderRadius.circular(4),
+                          // Live Tipping Badge
+                          Positioned(
+                            bottom: 20,
+                            right: 20,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.greenAccent.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(color: Colors.greenAccent),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.bolt, color: Colors.greenAccent, size: 14),
+                                  SizedBox(width: 4),
+                                  Text('Instant UPI Tips', style: TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 30),
+                  const SizedBox(height: 25),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
-                      elevation: 8,
-                      shadowColor: Colors.amber.withOpacity(0.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-                    ),
-                    onPressed: () {
-                      if (_currentPage < _onboardingData.length - 1) {
-                        _pageController.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeIn,
-                        );
-                      } else {
-                        _showAuthBottomSheet(context);
-                      }
-                    },
-                    child: Text(
-                      _currentPage == _onboardingData.length - 1 ? 'Get Started' : 'Continue',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  // Headline & All Features Combined
+                  const Text(
+                    "Next-Gen AI Reels & Live Studio",
+                    style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, height: 1.2),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Generate autonomous videos, receive direct creator tips & join 1000+ interactive live streams.",
+                    style: TextStyle(color: Colors.white60, fontSize: 13, height: 1.4),
+                  ),
+                  const SizedBox(height: 25),
+
+                  // Get Started / Sign In CTA
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        foregroundColor: Colors.black,
+                        elevation: 10,
+                        shadowColor: Colors.amber.withOpacity(0.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+                      ),
+                      onPressed: () => _showAuthBottomSheet(context),
+                      child: const Text('Get Started & Sign In 🙏', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
