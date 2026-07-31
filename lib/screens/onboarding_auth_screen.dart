@@ -56,7 +56,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top Bar Branding: Strictly "Vybe" Only
+            // Top Bar Branding: "Vybe" Only
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
               child: Row(
@@ -93,7 +93,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
               ),
             ),
 
-            // Main Hero Area
+            // Main Content Area
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -139,11 +139,11 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Interactive Girl Model & Phone Mockup Card
+                      // Main Hero Container (FULL PHOTO LEFT - NO CIRCLE)
                       Container(
                         width: double.infinity,
-                        height: 240,
-                        padding: const EdgeInsets.all(16),
+                        height: 250,
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [Colors.amber.withOpacity(0.18), const Color(0xFF141414)],
@@ -155,48 +155,63 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                         ),
                         child: Row(
                           children: [
-                            // Left Side: AI Girl Creator Hero Card
+                            // Left Side: FULL High Quality Indian AI Girl Photo (Circle Removed!)
                             Expanded(
                               flex: 5,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 85,
-                                    height: 85,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient: const LinearGradient(
-                                        colors: [Color(0xFFFFB703), Color(0xFFFB8500)],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
+                              child: Container(
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.amber.withOpacity(0.6), width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.amber.withOpacity(0.2), blurRadius: 10),
+                                  ],
+                                  image: const DecorationImage(
+                                    image: NetworkImage('https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm00OTQtYmctMDA1YS14LmpwZw.jpg'),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    // Gradient Overlay at Bottom for Text Visibility
+                                    Positioned(
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(18)),
+                                          gradient: LinearGradient(
+                                            colors: [Colors.black.withOpacity(0.85), Colors.transparent],
+                                            begin: Alignment.bottomCenter,
+                                            end: Alignment.topCenter,
+                                          ),
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: Colors.amber,
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: const Text('Namaste! 🙏', style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            const Text('@Aria_AI • Creator', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600)),
+                                          ],
+                                        ),
                                       ),
-                                      border: Border.all(color: Colors.white, width: 2.5),
-                                      boxShadow: [
-                                        BoxShadow(color: Colors.amber.withOpacity(0.5), blurRadius: 16),
-                                      ],
                                     ),
-                                    child: const Center(
-                                      child: Icon(Icons.face_3_rounded, color: Colors.black87, size: 52),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(15),
-                                      border: Border.all(color: Colors.amber.withOpacity(0.8)),
-                                    ),
-                                    child: const Text('AI Creator ✨', style: TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold)),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  const Text('@Aria_AI • Digital Model', style: TextStyle(color: Colors.white54, fontSize: 9)),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
+                            const SizedBox(width: 12),
 
-                            // Right Side: Live Tipping Mockup
+                            // Right Side: Live Stream Tipping Mockup
                             Expanded(
                               flex: 5,
                               child: Container(
