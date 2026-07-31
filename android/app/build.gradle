@@ -28,7 +28,7 @@ apply plugin: 'com.google.gms.google-services'
 
 android {
     namespace "com.example.vybe"
-    compileSdkVersion 33
+    compileSdkVersion 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -42,7 +42,7 @@ android {
     defaultConfig {
         applicationId "com.example.vybe"
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true

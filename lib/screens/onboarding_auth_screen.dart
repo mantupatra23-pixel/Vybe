@@ -76,7 +76,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
               ),
             ),
 
-            // Hero Main Section (Inspired by Image Layout)
+            // Hero Main Section
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -85,7 +85,6 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 10),
-                      // Catchy Banner Headline
                       RichText(
                         text: const TextSpan(
                           children: [
@@ -118,7 +117,6 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                         ),
                         child: Row(
                           children: [
-                            // Left Section: Namaste AI Girl Model
                             Expanded(
                               flex: 5,
                               child: Column(
@@ -153,7 +151,6 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                               ),
                             ),
 
-                            // Right Section: Mini Phone Preview Mockup
                             Expanded(
                               flex: 5,
                               child: Container(
@@ -203,7 +200,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // 4 Bottom Feature Pill Badges (Exact match to sample image)
+                      // Feature Badges
                       Row(
                         children: [
                           Expanded(child: _buildBadgeItem(Icons.monetization_on_outlined, "Earn in Minutes")),
@@ -266,7 +263,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
           Flexible(
             child: Text(
               label,
-              style: const TextStyle(color: Colors.white80, fontSize: 11, fontWeight: FontWeight.w600),
+              style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
               overflow: TextOverflow.ellipsis,
             ),
           ),
