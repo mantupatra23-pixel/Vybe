@@ -9,8 +9,24 @@ class OnboardingAuthScreen extends StatefulWidget {
   State<OnboardingAuthScreen> createState() => _OnboardingAuthScreenState();
 }
 
-class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
+class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> with SingleTickerProviderStateMixin {
   bool _isLoading = false;
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   void _proceedToApp() {
     Navigator.pushReplacement(
@@ -37,21 +53,23 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Background Golden Glow Effect
+          // Background Glow Orbs
           Positioned(
-            top: -60,
-            left: MediaQuery.of(context).size.width * 0.15,
+            top: -50,
+            left: screenSize.width * 0.1,
             child: Container(
-              width: 280,
-              height: 280,
+              width: 300,
+              height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [Colors.amber.withOpacity(0.35), Colors.transparent],
+                  colors: [Colors.amber.withOpacity(0.3), Colors.transparent],
                 ),
               ),
             ),
@@ -59,11 +77,11 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
 
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top Row: 1000+ Creators Active Badge & Explore Skip
+                  // Top Row Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -72,7 +90,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                         decoration: BoxDecoration(
                           color: Colors.amber.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.amber.withOpacity(0.6)),
+                          border: Border.all(color: Colors.amber.withOpacity(0.5)),
                         ),
                         child: const Row(
                           children: [
@@ -90,24 +108,24 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                  // Center AI Girl Influencer Card (Namaste Greeting)
+                  // Center Card: AI Girl Creator Hero Section
                   Expanded(
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.amber.withOpacity(0.2), const Color(0xFF181818)],
+                          colors: [Colors.amber.withOpacity(0.18), const Color(0xFF141414)],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
-                        borderRadius: BorderRadius.circular(32),
-                        border: Border.all(color: Colors.amber.withOpacity(0.4), width: 1.5),
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(color: Colors.amber.withOpacity(0.35), width: 1.2),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.amber.withOpacity(0.1),
-                            blurRadius: 25,
+                            color: Colors.amber.withOpacity(0.08),
+                            blurRadius: 20,
                             spreadRadius: 2,
                           ),
                         ],
@@ -115,13 +133,26 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // Influencer Avatar Layout
+                          // Animated Pulse Ring
+                          ScaleTransition(
+                            scale: Tween<double>(begin: 0.95, end: 1.08).animate(_pulseController),
+                            child: Container(
+                              width: 130,
+                              height: 130,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.amber.withOpacity(0.4), width: 1.5),
+                              ),
+                            ),
+                          ),
+
+                          // Creator Avatar & Welcome Tag
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Container(
-                                width: 110,
-                                height: 110,
+                                width: 105,
+                                height: 105,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
@@ -129,44 +160,44 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                                   ),
                                   border: Border.all(color: Colors.white, width: 3),
                                   boxShadow: [
-                                    BoxShadow(color: Colors.amber.withOpacity(0.5), blurRadius: 20),
+                                    BoxShadow(color: Colors.amber.withOpacity(0.4), blurRadius: 15),
                                   ],
                                 ),
                                 child: const Center(
-                                  child: Text('🥻', style: TextStyle(fontSize: 55)),
+                                  child: Text('🥻', style: TextStyle(fontSize: 50)),
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 14),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.8),
+                                  color: Colors.black.withOpacity(0.85),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(color: Colors.amber),
                                 ),
                                 child: const Text(
                                   'Namaste! 🙏 Welcome to Vybe',
-                                  style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 15),
+                                  style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 14),
                                 ),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 8),
                               const Text(
                                 '@Aria_AI • Digital Influencer',
-                                style: TextStyle(color: Colors.white60, fontSize: 12),
+                                style: TextStyle(color: Colors.white54, fontSize: 12),
                               ),
                             ],
                           ),
 
-                          // Live Tipping Badge
+                          // Instant UPI Badge
                           Positioned(
-                            bottom: 20,
-                            right: 20,
+                            bottom: 16,
+                            right: 16,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
-                                color: Colors.greenAccent.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(15),
-                                border: Border.all(color: Colors.greenAccent),
+                                color: Colors.greenAccent.withOpacity(0.18),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.greenAccent.withOpacity(0.6)),
                               ),
                               child: const Row(
                                 children: [
@@ -181,21 +212,32 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 20),
 
-                  // Headline & All Features Combined
+                  // Features Grid Stats
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildMetricItem("1.2M+", "AI Reels"),
+                      _buildMetricItem("4.9 ★", "Top Rated"),
+                      _buildMetricItem("⚡ Instant", "UPI Payouts"),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Main Headline
                   const Text(
                     "Next-Gen AI Reels & Live Studio",
-                    style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, height: 1.2),
+                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, height: 1.2),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   const Text(
                     "Generate autonomous videos, receive direct creator tips & join 1000+ interactive live streams.",
-                    style: TextStyle(color: Colors.white60, fontSize: 13, height: 1.4),
+                    style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.4),
                   ),
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 20),
 
-                  // Get Started / Sign In CTA
+                  // Call To Action Button
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -203,8 +245,8 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.amber,
                         foregroundColor: Colors.black,
-                        elevation: 10,
-                        shadowColor: Colors.amber.withOpacity(0.5),
+                        elevation: 8,
+                        shadowColor: Colors.amber.withOpacity(0.4),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
                       ),
                       onPressed: () => _showAuthBottomSheet(context),
@@ -217,6 +259,16 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMetricItem(String value, String label) {
+    return Column(
+      children: [
+        Text(value, style: const TextStyle(color: Colors.amber, fontSize: 15, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 2),
+        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 11)),
+      ],
     );
   }
 
@@ -263,7 +315,14 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                   _proceedToApp();
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
+
+              const Text(
+                'By continuing, you agree to Vybe Terms of Service & Privacy Policy.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white38, fontSize: 10),
+              ),
+              const SizedBox(height: 10),
             ],
           ),
         );
