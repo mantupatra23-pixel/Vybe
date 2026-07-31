@@ -11,6 +11,7 @@ class OnboardingAuthScreen extends StatefulWidget {
 
 class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
   bool _isLoading = false;
+  int _tipAmount = 9;
 
   void _proceedToApp() {
     Navigator.pushReplacement(
@@ -35,6 +36,19 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
     }
   }
 
+  void _simulateLiveTip() {
+    setState(() {
+      _tipAmount += 10;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 1),
+        backgroundColor: Colors.greenAccent,
+        content: Text('⚡ Instant ₹$_tipAmount Tip sent to @Aria_AI!', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,7 +56,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top Bar Branding
+            // Top Bar Branding & Live Visitors Badge
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
               child: Row(
@@ -55,6 +69,9 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                         decoration: BoxDecoration(
                           color: Colors.amber,
                           borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(color: Colors.amber.withOpacity(0.4), blurRadius: 10),
+                          ],
                         ),
                         child: const Icon(Icons.bolt, color: Colors.black, size: 20),
                       ),
@@ -76,7 +93,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
               ),
             ),
 
-            // Hero Main Section
+            // Main Hero Area
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -84,13 +101,34 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(height: 6),
+
+                      // Live Creator Counter Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.amber.withOpacity(0.4)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.circle, color: Colors.greenAccent, size: 8),
+                            SizedBox(width: 6),
+                            Text('1,420 Active Creators Online', style: TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 10),
+
+                      // Main Headline
                       RichText(
                         text: const TextSpan(
                           children: [
-                            TextSpan(text: "Turn AI Creations\n", style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w900, height: 1.1)),
-                            TextSpan(text: "Into Instant Earnings ", style: TextStyle(color: Colors.amber, fontSize: 30, fontWeight: FontWeight.w900, height: 1.1)),
-                            TextSpan(text: "⚡", style: TextStyle(fontSize: 26)),
+                            TextSpan(text: "Turn AI Creations\n", style: TextStyle(color: Colors.white, fontSize: 29, fontWeight: FontWeight.w900, height: 1.1)),
+                            TextSpan(text: "Into Instant Earnings ", style: TextStyle(color: Colors.amber, fontSize: 29, fontWeight: FontWeight.w900, height: 1.1)),
+                            TextSpan(text: "⚡", style: TextStyle(fontSize: 25)),
                           ],
                         ),
                       ),
@@ -99,24 +137,25 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                         "Generate autonomous short reels, host live streams & get direct UPI tips from 1000+ active creators.",
                         style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 18),
 
-                      // Interactive Split Card: Left Model + Right Phone Preview
+                      // Interactive Card Container
                       Container(
                         width: double.infinity,
                         height: 250,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Colors.amber.withOpacity(0.15), const Color(0xFF181818)],
+                            colors: [Colors.amber.withOpacity(0.18), const Color(0xFF141414)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(28),
-                          border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                          border: Border.all(color: Colors.amber.withOpacity(0.35)),
                         ),
                         child: Row(
                           children: [
+                            // Left Side: Realistic AI Model Card
                             Expanded(
                               flex: 5,
                               child: Column(
@@ -127,13 +166,15 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                                     height: 85,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      gradient: const LinearGradient(colors: [Colors.amber, Colors.orangeAccent]),
-                                      border: Border.all(color: Colors.white, width: 2.5),
+                                      border: Border.all(color: Colors.amber, width: 2.5),
                                       boxShadow: [
-                                        BoxShadow(color: Colors.amber.withOpacity(0.4), blurRadius: 15),
+                                        BoxShadow(color: Colors.amber.withOpacity(0.5), blurRadius: 15),
                                       ],
+                                      image: const DecorationImage(
+                                        image: NetworkImage('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300'),
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
-                                    child: const Center(child: Text('🥻', style: TextStyle(fontSize: 42))),
                                   ),
                                   const SizedBox(height: 10),
                                   Container(
@@ -151,15 +192,16 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                               ),
                             ),
 
+                            // Right Side: Interactive Phone Mockup
                             Expanded(
                               flex: 5,
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.black,
                                   borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: Colors.white24, width: 2),
+                                  border: Border.all(color: Colors.white24, width: 1.5),
                                   boxShadow: [
-                                    BoxShadow(color: Colors.amber.withOpacity(0.1), blurRadius: 10),
+                                    BoxShadow(color: Colors.amber.withOpacity(0.12), blurRadius: 10),
                                   ],
                                 ),
                                 child: Padding(
@@ -178,16 +220,23 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                                           )
                                         ],
                                       ),
-                                      const Icon(Icons.play_circle_fill_rounded, color: Colors.amber, size: 36),
-                                      Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.symmetric(vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: Colors.amber,
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: const Center(
-                                          child: Text('Send ₹9 Tip ⚡', style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      const Icon(Icons.play_circle_fill_rounded, color: Colors.amber, size: 38),
+                                      GestureDetector(
+                                        onTap: _simulateLiveTip,
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 200),
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.symmetric(vertical: 7),
+                                          decoration: BoxDecoration(
+                                            color: Colors.amber,
+                                            borderRadius: BorderRadius.circular(10),
+                                            boxShadow: [
+                                              BoxShadow(color: Colors.amber.withOpacity(0.4), blurRadius: 8),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Text('Send ₹$_tipAmount Tip ⚡', style: const TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -198,7 +247,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 18),
 
                       // Feature Badges
                       Row(
@@ -222,7 +271,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
               ),
             ),
 
-            // Bottom CTA Sign In Button
+            // Bottom CTA
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: SizedBox(
@@ -232,7 +281,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber,
                     foregroundColor: Colors.black,
-                    elevation: 8,
+                    elevation: 10,
                     shadowColor: Colors.amber.withOpacity(0.5),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
                   ),
