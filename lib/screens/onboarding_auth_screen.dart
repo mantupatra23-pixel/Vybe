@@ -101,7 +101,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
 
                       // Live Creator Counter Badge
                       Container(
@@ -122,13 +122,13 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                       ),
                       const SizedBox(height: 10),
 
-                      // Main Headline
+                      // Primary Taglines
                       RichText(
                         text: const TextSpan(
                           children: [
-                            TextSpan(text: "Turn AI Creations\n", style: TextStyle(color: Colors.white, fontSize: 29, fontWeight: FontWeight.w900, height: 1.1)),
-                            TextSpan(text: "Into Instant Earnings ", style: TextStyle(color: Colors.amber, fontSize: 29, fontWeight: FontWeight.w900, height: 1.1)),
-                            TextSpan(text: "⚡", style: TextStyle(fontSize: 25)),
+                            TextSpan(text: "Every Swipe Sparks Something.\n", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, height: 1.2)),
+                            TextSpan(text: "Create Smarter. Earn Faster. ", style: TextStyle(color: Colors.amber, fontSize: 24, fontWeight: FontWeight.w900, height: 1.2)),
+                            TextSpan(text: "⚡", style: TextStyle(fontSize: 22)),
                           ],
                         ),
                       ),
@@ -137,12 +137,12 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                         "Generate autonomous short reels, host live streams & get direct UPI tips from 1000+ active creators.",
                         style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 16),
 
-                      // Interactive Card Container
+                      // Interactive Namaste Model & Phone Mockup Card
                       Container(
                         width: double.infinity,
-                        height: 250,
+                        height: 240,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -155,7 +155,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                         ),
                         child: Row(
                           children: [
-                            // Left Side: Realistic AI Model Card
+                            // Left Side: Namaste Aesthetic Creator Badge
                             Expanded(
                               flex: 5,
                               child: Column(
@@ -166,14 +166,18 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                                     height: 85,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      border: Border.all(color: Colors.amber, width: 2.5),
-                                      boxShadow: [
-                                        BoxShadow(color: Colors.amber.withOpacity(0.5), blurRadius: 15),
-                                      ],
-                                      image: const DecorationImage(
-                                        image: NetworkImage('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300'),
-                                        fit: BoxFit.cover,
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFFFFB703), Color(0xFFFB8500)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
                                       ),
+                                      border: Border.all(color: Colors.white, width: 2.5),
+                                      boxShadow: [
+                                        BoxShadow(color: Colors.amber.withOpacity(0.5), blurRadius: 16),
+                                      ],
+                                    ),
+                                    child: const Center(
+                                      child: Text('🙏', style: TextStyle(fontSize: 44)),
                                     ),
                                   ),
                                   const SizedBox(height: 10),
@@ -187,12 +191,12 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                                     child: const Text('Namaste! 🙏', style: TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold)),
                                   ),
                                   const SizedBox(height: 4),
-                                  const Text('@Aria_AI • Digital Model', style: TextStyle(color: Colors.white54, fontSize: 9)),
+                                  const Text('@Aria_AI • Digital Influencer', style: TextStyle(color: Colors.white54, fontSize: 9)),
                                 ],
                               ),
                             ),
 
-                            // Right Side: Interactive Phone Mockup
+                            // Right Side: Live Tipping Mockup
                             Expanded(
                               flex: 5,
                               child: Container(
@@ -247,7 +251,7 @@ class _OnboardingAuthScreenState extends State<OnboardingAuthScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 16),
 
                       // Feature Badges
                       Row(
