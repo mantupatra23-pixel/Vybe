@@ -1,7 +1,7 @@
 name: vybe
 description: "Vybe - Short Video & AI Live Platform"
 publish_to: 'none'
-version: 1.0.1+1
+version: 1.0.2+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -19,6 +19,7 @@ dependencies:
   google_sign_in: ^6.2.1
   firebase_messaging: ^14.7.19
   firebase_analytics: ^10.8.9
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:

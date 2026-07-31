@@ -8,6 +8,7 @@ import 'screens/live_grid_screen.dart';
 import 'widgets/real_video_card.dart';
 import 'services/api_service.dart';
 import 'services/update_service.dart';
+import 'services/firebase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,8 +31,54 @@ class VybeApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
       ),
-      home: const OnboardingAuthScreen(),
+      home: const AuthWrapper(),
     );
+  }
+}
+
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _checking = true;
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUserSession();
+  }
+
+  Future<void> _checkUserSession() async {
+    final user = await FirebaseService.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = user != null;
+        _checking = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_checking) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.amber),
+        ),
+      );
+    }
+
+    if (_isLoggedIn) {
+      return const MainNavigationScreen();
+    } else {
+      return const OnboardingAuthScreen();
+    }
   }
 }
 
